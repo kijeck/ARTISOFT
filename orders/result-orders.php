@@ -36,7 +36,7 @@ else{
 
 if ($SearchWord != ""){
 
-    $SortByWord = "AND (ordered_product.product_code LIKE '%$SearchWord%' OR ordered_product.status LIKE '%$SearchWord%' OR ordered_product.product_name LIKE '%$SearchWord%' OR ordered_product.product_variant LIKE '%$SearchWord%' OR ordered_product.description LIKE '%$SearchWord%' OR ordered_product.category LIKE '%$SearchWord%' OR 'ordered_product.marking' LIKE '%$SearchWord%'  OR ordered_product.marking_code LIKE '%$SearchWord%'  OR ordered_product.amount LIKE '%$SearchWord%' OR ordered_product.status LIKE '%$SearchWord%' OR ordered_product.order_number LIKE '%$SearchWord%' OR orders.company_name LIKE '%$SearchWord%' OR orders.client_name LIKE '%$SearchWord%' OR orders.nip LIKE '%$SearchWord%'  OR orders.email LIKE '%$SearchWord%'  OR orders.address LIKE '%$SearchWord%'  OR orders.place LIKE '%$SearchWord%'  OR orders.phone_number LIKE '%$SearchWord%'  OR orders.number LIKE '%$SearchWord%'  OR user LIKE '%$SearchWord%')";
+    $SortByWord = "AND (product_code LIKE '%$SearchWord%' OR status LIKE '%$SearchWord%' OR product_name LIKE '%$SearchWord%' OR product_variant LIKE '%$SearchWord%' OR description LIKE '%$SearchWord%' OR category LIKE '%$SearchWord%' OR 'marking' LIKE '%$SearchWord%'  OR marking_code LIKE '%$SearchWord%'  OR amount LIKE '%$SearchWord%' OR order_number LIKE '%$SearchWord%' OR company_name LIKE '%$SearchWord%' OR client_name LIKE '%$SearchWord%' OR nip LIKE '%$SearchWord%'  OR email LIKE '%$SearchWord%'  OR address LIKE '%$SearchWord%'  OR place LIKE '%$SearchWord%'  OR phone_number LIKE '%$SearchWord%'  OR number LIKE '%$SearchWord%'  OR user LIKE '%$SearchWord%')";
 }
 
 
@@ -49,22 +49,21 @@ if ($SearchWord != ""){
         echo "<td width='70'>id</td>";
         echo "<td>Klient</td>";
         echo "<td>Produkt</td>";     
-        echo "<td align='right'>Opis</td>";
-        echo "<td align='left'>wz</td>"; // WZ
-        echo "<td align='right'>Ilość</td>";
+        echo "<td align='right'>wz</td>"; // WZ
+        echo "<td width='80' align='right'>Ilość</td>";
         echo "<td width='30' align='center'></td>";  // FACE ICON - PRODUCTION INDICATOR
-        echo "<td width='30'>Znakowanie</td>";
+        echo "<td>Znakowanie</td>";
         echo "<td width='20'></td>";
-        echo "<td align='center'>Cena</td>";
+        echo "<td  width='100' align='center'>Cena</td>";
         echo "<td width='10' align='center'></td>";
-        echo "<td width='100' align='center'>Przesyłka</td>";
+        echo "<td width='80' align='center'>Przesyłka</td>";
         echo "<td width='100' align='right'>Termin</td>";
         echo "<td width='10'></td>";  //VERTICAL RED LINE ALERT
-        echo "<td width='100' align='center'>Akcje</td>";
+        echo "<td width='90' align='center'>Akcje</td>";
         echo "</tr>";
 
 
-        $query = "SELECT DISTINCT * FROM ordered_product LEFT JOIN orders ON ordered_product.order_number = orders.number WHERE ordered_product.id > 0 $SortByClient $SortByCategory $SortByStatus $SortByWord GROUP BY product_group ORDER BY order_number DESC;";
+        $query = "SELECT DISTINCT * FROM orders LEFT JOIN ordered_product ON ordered_product.order_number = orders.number LEFT JOIN marking ON ordered_product_number = ordered_product.product_group LEFT JOIN shipment ON shipment.orders_number = orders.number  WHERE ordered_product.id > 0 $SortByClient $SortByCategory $SortByStatus $SortByWord GROUP BY product_group ORDER BY order_number DESC;";
         // FETCHING DATA FROM DATABASE  ////////////////////////////////////////////////////////////////////////////////^^^^^^^^^^^^^^GROUP BY ordered_product.product_group
         $result = mysqli_query($link, $query);
 
@@ -130,8 +129,9 @@ if ($SearchWord != ""){
             echo "</td>";
             echo "<td>".$row['order_number']. "/" .$row['id']. "<div class='lowerfont'>" . $date_of_order . "</div></td>";
             echo "<td>".$row['company_name']. " <div class='lowerfont'>" . $client_name . "</div></td>";
+                        
             echo "<td>";
-            echo $row['product_name'];
+            echo $row['product_name'] . " <span style='font-weight:500'>".$row['description']. "</span>";
             echo "<br>";
                 
 
@@ -153,13 +153,13 @@ if ($SearchWord != ""){
 
             echo "</td>";
             
-            echo "<td align='right'>".$row['description']."</td>";
-            echo "<td align='left'>";
+            
+            echo "<td align='right'>";
             
                 // WZ INDICATORS
 
-                    echo "<div class='wz-dot'><img src='../images/wz-icon-out.svg' width='100%' height='100%' border='0'></div>";
-                    echo "<div class='wz-dot'><img src='../images/wz-icon-out.svg' width='100%' height='100%' border='0'></div>";                  
+                    echo "<div class='wz-dot'><img src='../images/wz-icon-new.svg' width='100%' height='100%'></div>";
+                    echo "<div class='wz-dot'><img src='../images/wz-icon-new.svg' width='100%' height='100%'></div>";               
 
                 // END
 
@@ -176,13 +176,27 @@ if ($SearchWord != ""){
             
             echo "</td>";
 
+            echo "<td>";
+
                 // MARKING INDOCATORS
 
-            echo "<td><div><img src='../images/marking/".$row['marking_code']."-".$row['number_of_colors'].".svg'</div></td>";
+                $ordered_product_number = $row['product_group'];
+
+                $query3 = "SELECT * FROM marking WHERE ordered_product_number = '$ordered_product_number'";
+                // FETCHING DATA FROM DATABASE
+                $result3 = mysqli_query($link, $query3);
+        
+                if (mysqli_num_rows($result3) > 0) {
+                    // OUTPUT DATA OF EACH ROW
+                    while($row3 = mysqli_fetch_assoc($result3)) {
+
+                        echo "<img class='marking-icon' src='../images/marking/".$row3['marking_code']."-".$row3['number_of_colors'].".svg' title='".$row3['marking_location']."'>";
+                    }
+                }  
 
                 // END
 
-           
+            echo "</td>";
             echo "<td align='center'>";
 
                 // PAYMENT INDICATOR
@@ -219,24 +233,43 @@ if ($SearchWord != ""){
                     echo "<img src='../images/payment-cash.svg' class='payment-icon' title='".$row['payment']."'>";
                 }
 
-
-
-            
             echo "</td>";
 
             $sum_total_gross = $sum_total_netto * ((100+$vat)/100);
 
             echo "<td align='center'><div>" . sprintf('%01.2f', $sum_total_gross) . " zł</div><div class='lowerfont'>" .  sprintf('%01.2f', $sum_total_netto) ." zł</div></td>";
             echo "<td align='center'><img src='../images/red-line-vert.svg' width='6' height='40'></td>";
-            echo "<td align='center'>23,37<div></div></td>";
+            echo "<td align='center'>";
+
+                // SHIPMENT
+
+                
+
+                $query4 = "SELECT * FROM shipment WHERE orders_number = '$order_number'";
+                // FETCHING DATA FROM DATABASE
+                $result4 = mysqli_query($link, $query4);
+        
+                if (mysqli_num_rows($result4) > 0) {
+                    // OUTPUT DATA OF EACH ROW
+                    while($row4 = mysqli_fetch_assoc($result4)) {
+                        
+                        echo "<div>" . $row4['price_netto'] . "</div>";
+                        echo "<div>" . $row4['name'] . "</div>";
+                    }
+                } 
+
+                // END
+            echo "</td>";
             echo "<td align='right'>".$due_date."</td>";
             echo "<td valign='middle'><img src='../images/red-line-vert.svg' width='6' height='40'></td>";
             echo "<td align='center'>";
             
                 // ACTION ICONS
                 
-                echo "<div class='action-icon'><a href='' target='_blank'><img src='../images/close-icon.svg'></a></div>";
-                echo "<div class='action-icon'><a href='' target='_blank'><img src='../images/arrow-down.svg'></a></div>";
+                echo "<div class='action-icon'><a href='' target='_blank'><img src='../images/wz-icon-new.svg' width='100%' height='100%'></a></div>";
+                echo "<div class='action-icon'><a href='' target='_blank'><img src='../images/message-icon.svg' width='100%' height='100%'></a></div>";
+                echo "<div class='action-icon'><a href='' target='_blank'><img src='../images/close-icon.svg' width='100%' height='100%'></a></div>";
+                echo "<div class='action-icon'><a href='' target='_blank'><img src='../images/arrow-down.svg' width='100%' height='100%'></a></div>";
                 
 
                 // END
