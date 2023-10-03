@@ -297,6 +297,13 @@ box-sizing:content-box;
 height:18px;
 }
 
+.textfield-2{
+    width:100%;
+    border:solid 1px;
+    border-color:#E2E2E2;
+    padding:8px;
+    }
+
 
 .textfield, label{
 

@@ -3,6 +3,24 @@
 session_start();
 include "../sql.php";
 $Date=date("Y-m-d H:i:s");
+
+
+if(isset($_GET['id'])) {
+    $ordered_product_id=$_GET['id'];
+}
+else{
+    $ordered_product_id=null;
+
+}
+
+if(isset($_GET['product_code'])) {
+    $product_code=$_GET['product_code'];
+}
+else{
+    $product_code=null;
+}
+
+
  
 // Check if the user is logged in, if not then redirect him to login page
 if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
@@ -34,11 +52,13 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
 <script>
 
     function searchproduct() {
+
         item = document.getElementById("SearchField").value;
         
         ProductName = document.getElementById("ProductName").value;
         Category = document.getElementById("Category").value;
         ProductVariant = document.getElementById("ProductVariant").value;
+        ordered_product_id = "<?php echo $ordered_product_id; ?>";
 
         let xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function() {
@@ -47,13 +67,19 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
         }
         };
        
-        xmlhttp.open("GET","result-main.php?item="+item+"&ProductName="+ProductName+"&ProductVariant="+ProductVariant+"&Category="+Category,true);
+        xmlhttp.open("GET","result-main.php?item="+item+"&ProductName="+ProductName+"&ProductVariant="+ProductVariant+"&Category="+Category+"&ordered_product_id="+ordered_product_id,true);
         xmlhttp.send();
         RowPrev=0;
    
         
        
 
+    }
+
+    function searchproduct_load(){
+        item = "<?php echo $product_code; ?>";
+        document.getElementById("SearchField").value = item;
+        searchproduct();
     }
 
     function HideSearch(){
@@ -65,7 +91,7 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
 
 </head>
 
-<body>
+<body onload="searchproduct_load()">
 
 <?php 
 $title = "Magazyn";

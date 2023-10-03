@@ -6,6 +6,12 @@ $SearchWord=$_GET['item'];
 $ProductName = $_GET['ProductName'];
 $ProductVariant = $_GET['ProductVariant'];
 $Category=$_GET['Category'];
+
+if(isset($_GET['ordered_product_id'])) {
+    $ordered_product_id = $_GET['ordered_product_id'];
+}
+
+
 $SortByProduct="";
 $SortByWord="";
 $SortByCategory="";
@@ -14,6 +20,7 @@ $CountTotal = 0;
 include "../sql.php";
 
 include "../colors.php";
+
 
 if ($ProductName != ""){
     $SortByProduct = "AND product_name='$ProductName'";
@@ -76,8 +83,8 @@ if ($SearchWord != "" || $ProductName != "" || $Category != "" || $ProductVarian
                 echo "<td align='right'>" .$row['unit_netto']. " zł</td>";
                 echo "<td align='center'>
                 
-                <div class='action-icon'><a target='_blank' href='___.php?zmienna=10753'><img src='../images/edit-icon.svg' width='100%' height='100%' border='0'></a></div>
-                <div class='action-icon'><a target='_blank' href='wz-add.php?pz=".$row['id']."&order_id=0'><img src='../images/wz-icon.svg' width='100%' height='100%' border='0'></a></div>
+                <div class='action-icon'><a target='_blank' href='___.php?zmienna=10753'><img src='../images/wz-edit.svg' width='100%' height='100%' border='0'></a></div>
+                <div class='action-icon'><a target='_blank' href='wz-add.php?pz=".$row['id']."&ordered_product_id=".$ordered_product_id."'><img src='../images/wz-icon-new.svg' width='100%' height='100%' border='0'></a></div>
 
                 </td>";
                 echo "<td></td>";

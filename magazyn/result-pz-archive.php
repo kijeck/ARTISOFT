@@ -29,7 +29,7 @@ if ($ProductVariant != ""){
 
 if ($SearchWord != ""){
 
-    $SortByWord = "AND (product_code LIKE '%$SearchWord%' OR product_name LIKE '%$SearchWord%' OR invoice_number LIKE '%$SearchWord%' OR amount LIKE '$SearchWord' OR product_variant LIKE '%$SearchWord%' OR supplier_name LIKE '%$SearchWord%' OR category LIKE '%$SearchWord%')";
+    $SortByWord = "AND (id LIKE '%$SearchWord%' OR product_code LIKE '%$SearchWord%' OR product_name LIKE '%$SearchWord%' OR invoice_number LIKE '%$SearchWord%' OR amount LIKE '$SearchWord' OR product_variant LIKE '%$SearchWord%' OR supplier_name LIKE '%$SearchWord%' OR category LIKE '%$SearchWord%')";
 }
 
 if ($SearchWord != "" || $ProductName != "" || $Category != "" || $ProductVariant != ""){
@@ -82,7 +82,7 @@ if ($SearchWord != "" || $ProductName != "" || $Category != "" || $ProductVarian
 
                 $id_pz = $row['id'];
 
-                    $query2 = "SELECT * FROM wz WHERE pz_id=$id_pz;";
+                    $query2 = "SELECT *, wz.id AS wzid, wz.amount AS wzamount, wz.unit_netto AS wzunitnetto FROM wz LEFT JOIN ordered_product ON wz.order_id = ordered_product.id LEFT JOIN orders ON ordered_product.order_number = orders.number WHERE pz_id=$id_pz;";
                     // FETCHING DATA FROM DATABASE
                     $result2 = mysqli_query($link, $query2);
                     
@@ -95,13 +95,13 @@ if ($SearchWord != "" || $ProductName != "" || $Category != "" || $ProductVarian
                 echo "<td></td>";
                 echo "<td></td>";
                 echo "<td></td>";
-                echo "<td><div style='width: 15px; display: inline-block;'><img src='../images/vertical-line.svg'></div><div style='width: 100px; display: inline-block;'><strong>WZ</strong> ". $row2['id'] ."</div><div style='width: 100px; display: inline-block;'><strong>ZK</strong> <a href='#'>". $row2['order_id'] ."</a></div><div style='display: inline-block;'>NAZWA KLIENTA / ZLECENIA</div></td>";
+                echo "<td><div style='width: 15px; display: inline-block;'><img src='../images/vertical-line.svg'></div><div style='width: 100px; display: inline-block;'><strong>WZ</strong> ". $row2['wzid'] ."</div><div style='width: 100px; display: inline-block;'><strong>ZK</strong> <a href='#'>". $row2['order_number'] ."/". $row2['id'] ."</a></div><div style='display: inline-block;'>". $row2['company_name'] ." - ". $row2['description'] ."</div></td>";
                 echo "<td align='center'></td>"; 
                 echo "<td></td>";
                 echo "<td><div></div></td>";
-                echo "<td align='right'>" .$row2['amount']. "</td>";
+                echo "<td align='right'>" .$row2['wzamount']. "</td>";
                 echo "<td align='center'>szt.</td>";
-                echo "<td align='right'>" .$row2['unit_netto'] * $row2['amount'] . " zł</td>";
+                echo "<td align='right'>" .$row2['wzunitnetto'] * $row2['wzamount'] . " zł</td>";
                 echo "<td></td>";
                 echo "</tr>";
                     }

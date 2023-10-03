@@ -5,7 +5,15 @@ include "../sql.php";
 include "../colors.php";
 
 $pz=$_GET['pz'];
-$order_id=$_GET['order_id'];
+
+
+if(isset($_GET['ordered_product_id'])) {
+    $ordered_product_id=$_GET['ordered_product_id'];
+}
+else{
+    $ordered_product_id=null;
+
+}
 
  
 // Check if the user is logged in, if not then redirect him to login page
@@ -59,7 +67,7 @@ $result = mysqli_query($link, $query);
             AmountExtra = document.getElementById('AmountExtra').value;
             Comments = document.getElementById('Comments').value;
             //OrderNumber = document.getElementById('OrderNumber').value;
-            OrderNumber="666";
+            OrderNumber=<?php echo $ordered_product_id; ?>;        
             pz = <?php echo $pz; ?>;
 
             window.location.href = "../save.php?pz="+pz+"&Amount="+Amount+"&AmountExtra="+AmountExtra+"&OrderNumber="+OrderNumber+"&Comments="+Comments+"&Action=WZ-SAVE";
@@ -67,30 +75,7 @@ $result = mysqli_query($link, $query);
         }
 
 
-    function searchproduct() {
-        item = document.getElementById("SearchField").value;
-        SupplierName = document.getElementById("SupplierName").value;
-    if (item == "") {
-        document.getElementById("SearchResult").innerHTML = "";
-        return;
-    } else {
-        let xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("SearchResult").innerHTML = this.responseText;
-        }
-        };
-       
-        xmlhttp.open("GET","result.php?item="+item+"&supplier="+SupplierName,true);
-        xmlhttp.send();
-        RowPrev=0; 
-    }
-    }
-
-    function HideSearch(){
-        document.getElementById("SearchField").value = null;
-        searchproduct();
-    }
+ 
 
     function CountState(){
 
@@ -192,15 +177,84 @@ include 'mag-menu.php';
 
     <div class="naglowek-2">Do zamówienia</div>
 
-        <div class="col-1">
-            <div class="tresc"><input class="textfield"  id="SearchField" placeholder="..." onChange="searchproduct()" onClick="searchproduct()"></div>
+        <div >
+            <div class="textfield-2" >
+
+                <?php
+
+                // ORDERD PRODUCT DETAILS
+
+                $query2 = "SELECT * FROM ordered_product WHERE id = '$ordered_product_id'";
+                // FETCHING DATA FROM DATABASE
+                $result2 = mysqli_query($link, $query2);
+        
+                if (mysqli_num_rows($result2) > 0) {
+                    // OUTPUT DATA OF EACH ROW
+                    while($row2 = mysqli_fetch_assoc($result2)) {
+
+                        echo "<table width='100%' cellpadding=7 cellspacing=0 border=0>";
+
+                        echo "<tr class='header-table'>";
+                        echo "<td>id";
+
+                        echo "</td>";
+
+                        echo "<td>Produkt";
+
+                        echo "</td>";
+
+                        echo "<td>Wariant";
+
+                        echo "</td>";
+
+                        echo "<td>Kod produktu";
+
+                        echo "</td>";
+
+                        echo "<td>Ilość";
+
+                        echo "</td>";
+
+                        echo "</tr>";
+
+                        echo "<tr>";
+                        echo "<td>";
+                        echo $row2['order_number'] . "/" . $row2['id'];
+                        echo "</td>";
+
+                        echo "<td>";
+                        echo $row2['product_name'] . " " . $row2['description'] ;
+                        echo "</td>";
+
+                        echo "<td>";
+                        echo $row2['product_variant'];
+                        echo "</td>";
+
+                        echo "<td>";
+                        echo $row2['product_code'];
+                        echo "</td>";
+
+                        echo "<td>";
+                        echo $row2['amount'] . " szt.";
+                        echo "</td>";
+
+                        echo "</tr>";
+                        
+                        echo "</table>";
+
+                    }
+                }  
+
+                ?>
+
+            </div>
         </div>
         <br>
         <div id="SearchResult" class="col-1 productlist">
        
         </div>
 
-
+        
         <br><br>
         <div>
         <div class='color-icon-large' style='background-color:<?php echo ColorIcon($product_variant); ?>'></div>

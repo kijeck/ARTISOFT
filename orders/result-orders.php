@@ -147,7 +147,7 @@ if ($SearchWord != ""){
                         $variants_amount = $variants_amount + $row2['amount'];
                         $sum_total_netto = $sum_total_netto + $row2['total_netto'];
                         $wynik++;
-                        echo "<div id='".$row2['id']."' class='order-variant'><div class='color-icon-small' style='background-color:".ColorIcon($row2['product_variant'])."'></div><div style='display:inline-block'>". $row2['product_code'] ." - </div>". $row2['amount'] . " szt.</div>";
+                        echo "<div id='".$row2['id']."' class='order-variant'><a href='../magazyn/index.php?id=".$row2['id']."&amount=".$row2['amount']."&product_code=".$row2['product_code']."' target='_blank'><div class='color-icon-small' style='background-color:".ColorIcon($row2['product_variant'])."'></div></a><div style='display:inline-block'>". $row2['product_code'] ." - </div>". $row2['amount'] . " szt.</div>";
                     }
                 }  
 
@@ -266,7 +266,6 @@ if ($SearchWord != ""){
             
                 // ACTION ICONS
                 
-                echo "<div class='action-icon'><a href='' target='_blank'><img src='../images/wz-icon-new.svg' width='100%' height='100%'></a></div>";
                 echo "<div class='action-icon'><a href='' target='_blank'><img src='../images/message-icon.svg' width='100%' height='100%'></a></div>";
                 echo "<div class='action-icon'><a href='' target='_blank'><img src='../images/close-icon.svg' width='100%' height='100%'></a></div>";
                 echo "<div class='action-icon'><a href='' target='_blank'><img src='../images/arrow-down.svg' width='100%' height='100%'></a></div>";
