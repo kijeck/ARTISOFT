@@ -284,6 +284,11 @@ margin-top:10px;
 margin-bottom:10px;
 }
 
+.shipment_variant{
+    font-size: 12px;
+    font-weight: 1000;
+}
+
 
 .textfield{
 width:100%;

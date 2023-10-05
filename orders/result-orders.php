@@ -12,6 +12,10 @@ $SortByWord="";
 $SortByCategory="";
 $SortByStatus="";
 $CountTotal = 0;
+$shipment_tax=0;
+$Date=date("Y-m-d");
+
+
 include "../sql.php";
 
 include "../colors.php";
@@ -57,6 +61,7 @@ if ($SearchWord != ""){
         echo "<td  width='100' align='center'>Cena</td>";
         echo "<td width='10' align='center'></td>";
         echo "<td width='80' align='center'>Przesyłka</td>";
+        
         echo "<td width='100' align='right'>Termin</td>";
         echo "<td width='10'></td>";  //VERTICAL RED LINE ALERT
         echo "<td width='90' align='center'>Akcje</td>";
@@ -127,7 +132,7 @@ if ($SearchWord != ""){
                 // END
 
             echo "</td>";
-            echo "<td>".$row['order_number']. "/" .$row['id']. "<div class='lowerfont'>" . $date_of_order . "</div></td>";
+            echo "<td>".$row['order_number']. "-" .$row['id']. "<div class='lowerfont'>" . $date_of_order . "</div></td>";
             echo "<td>".$row['company_name']. " <div class='lowerfont'>" . $client_name . "</div></td>";
                         
             echo "<td>";
@@ -197,6 +202,7 @@ if ($SearchWord != ""){
                 // END
 
             echo "</td>";
+            
             echo "<td align='center'>";
 
                 // PAYMENT INDICATOR
@@ -238,13 +244,14 @@ if ($SearchWord != ""){
             $sum_total_gross = $sum_total_netto * ((100+$vat)/100);
 
             echo "<td align='center'><div>" . sprintf('%01.2f', $sum_total_gross) . " zł</div><div class='lowerfont'>" .  sprintf('%01.2f', $sum_total_netto) ." zł</div></td>";
-            echo "<td align='center'><img src='../images/red-line-vert.svg' width='6' height='40'></td>";
-            echo "<td align='center'>";
-
-                // SHIPMENT
-
+            
+                // SHIPMENT DETAILS
+          
+                $total_shipment=0;
+                $shipment_variant="";
+                $shipment_indicator="";
                 
-
+                
                 $query4 = "SELECT * FROM shipment WHERE orders_number = '$order_number'";
                 // FETCHING DATA FROM DATABASE
                 $result4 = mysqli_query($link, $query4);
@@ -253,15 +260,101 @@ if ($SearchWord != ""){
                     // OUTPUT DATA OF EACH ROW
                     while($row4 = mysqli_fetch_assoc($result4)) {
                         
-                        echo "<div>" . $row4['price_netto'] . "</div>";
-                        echo "<div>" . $row4['name'] . "</div>";
-                    }
+                        $shipment_tax = $row4['tax'];
+                        if ($row4['noname'] == true){
+                            $shipment_variant = "<div class='shipment_variant'>NONAME</div>";
+                            $shipment_indicator = "<img src='../images/red-line-vert.svg' width='6' height='40'>";
+                            
+                            
+                        }
+                        $total_shipment = $total_shipment + $row4['price_netto'];                      
+                    }  
                 } 
 
+                $total_shipment = $total_shipment * (($shipment_tax/100)+1);
+
+
                 // END
+                echo "<td align='center'>";
+
+            echo $shipment_indicator;
             echo "</td>";
-            echo "<td align='right'>".$due_date."</td>";
-            echo "<td valign='middle'><img src='../images/red-line-vert.svg' width='6' height='40'></td>";
+            echo "<td align='center'>";
+
+                // SHIPMENTS RESULTS
+
+                if ($total_shipment > 0){
+                    echo sprintf('%01.2f', $total_shipment) . " zł";
+                }
+
+                echo $shipment_variant;
+                
+                // END
+                        
+            echo "</td>";
+            
+            echo "<td align='right'>";
+            
+                // DUE DATE DETAILS
+
+
+                $date_before = new DateTime($due_date); // For today/now, don't pass an arg.
+                $date_before->modify("-1 day");
+                $date_before = $date_before->format("Y-m-d");
+               
+
+                $origin = date_create($due_date);
+                $target = date_create($Date);
+                $interval = date_diff($origin, $target);
+                $interval = $interval->format('%a');
+
+
+                if ($due_date == $Date){
+                    echo $due_date;
+                    echo "<div style='font-weight:1000; font-size: 12px;'>";
+                    echo "DZIŚ";
+                    echo "</div>";
+                    
+
+                }
+                else if ($date_before == $Date){
+                    echo $due_date;
+                    echo "<div style='font-weight:1000; font-size: 12px;'>";
+                    echo "JUTRO";
+                    echo "</div>";
+                }
+
+   
+
+                else
+                {
+                    echo "<div title='".$interval." dni po terminie'>" . $due_date . "</div>";
+                    
+                    if ($Date < $due_date){
+                        echo "<div style='font-size: 14px;'>";
+                        echo "<div>za ".$interval." dni</div>";
+                        echo "</div>";
+                    }
+
+                  
+
+                    
+                    
+       
+                }
+
+                
+
+            echo "</td>";
+            echo "<td valign='middle'>";
+                if ($due_date == $Date){
+                    echo "<img src='../images/red-line-vert.svg' width='6' height='40'></td>";
+
+                }
+
+                // END
+
+            
             echo "<td align='center'>";
             
                 // ACTION ICONS

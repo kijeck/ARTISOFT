@@ -82,7 +82,7 @@ echo "<table width='100%' cellpadding=7 cellspacing=0 border=0>";
         echo "<tr class='header-table'>";
         echo "<td width='30'></td>";
         echo "<td width='60'>ID WZ</td>";
-        echo "<td width='110'>Zamówienie</td>";
+        echo "<td width='200'>Zamówienie</td>";
         echo "<td width='150'>Opis</td>";
         echo "<td>Produkt</td>";
         echo "<td width='120' align='center'>Kod produktu</td>";
@@ -98,7 +98,7 @@ echo "<table width='100%' cellpadding=7 cellspacing=0 border=0>";
         $select_page = ($current_page*$results_per_page)-$results_per_page;
 
 
-        $query = "SELECT * FROM wz ORDER BY id DESC LIMIT $select_page, $results_per_page;";
+        $query = "SELECT orders.number, orders.company_name, wz.date, wz.order_id, wz.product_name, wz.product_variant, wz.product_code, wz.amount AS wzamount, wz.id AS wzid, wz.unit_netto AS wzunitnetto, ordered_product.description  FROM wz LEFT JOIN ordered_product ON ordered_product.id = wz.order_id LEFT JOIN orders ON orders.number = ordered_product.order_number ORDER BY ordered_product.id DESC LIMIT $select_page, $results_per_page;";
         // FETCHING DATA FROM DATABASE
         $result = mysqli_query($link, $query);
 
@@ -109,20 +109,20 @@ echo "<table width='100%' cellpadding=7 cellspacing=0 border=0>";
 
                 echo "<tr class='row-table row-table-select'>";
                 echo "<td></td>";
-                echo "<td><span class='lowerfont' title='" .$row['date']. "'>WZ ".$row['id']."</span></td>";
-                echo "<td>" .$row['order_id']. "<div class='lowerfont'>Klient</div></td>";
-                echo "<td>opis</td>";
+                echo "<td><span class='lowerfont' title='" .$row['date']. "'>WZ ".$row['wzid']."</span></td>";
+                echo "<td>" .$row['number']. "/" .$row['order_id']. "<div class='lowerfont'>" .$row['company_name']. "</div></td>";
+                echo "<td>" .$row['description']. "</td>";
                 echo "<td>" .$row['product_name']. "</td>";
                 echo "<td align='center'>" .$row['product_code']. "</td>";
                 echo "<td><div class='color-icon' style='background-color:".ColorIcon($row['product_variant'])."'></div></td>";
                 echo "<td><div>" .$row['product_variant']. "</div></td>";
-                echo "<td align='right'>" .$row['amount']. "</td>";
+                echo "<td align='right'>" .$row['wzamount']. "</td>";
                 echo "<td align='center'>szt.</td>";
-                echo "<td align='right'>" .$row['unit_netto'] * $row['amount'] . " zł</td>";
+                echo "<td align='right'>" .$row['wzunitnetto'] * $row['wzamount'] . " zł</td>";
                 echo "<td align='center'>";
                 
-                    if ($row['amount'] != 0){
-                    echo "<div class='action-icon'><a href='../save.php?wz=".$row['id']."&Action=WZ-RETURN'><img src='../images/wz-back.svg' width='100%' height='100%' border='0'></a></div>";
+                    if ($row['wzamount'] != 0){
+                    echo "<div class='action-icon'><a href='../save.php?wz=".$row['wzid']."&Action=WZ-RETURN'><img src='../images/wz-back.svg' width='100%' height='100%' border='0'></a></div>";
                     }
 
                 echo "</td>";
