@@ -1,3 +1,7 @@
+<?php
+
+?>
+
 <div class="top">
 	<div class="content">
        

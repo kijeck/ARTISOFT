@@ -275,6 +275,16 @@ margin-top:40px;
 margin-bottom:30px;
 }
 
+.hr-2{
+    color: rgb(133, 133, 133);
+    background-color:#E2E2E2;
+    height: 1px;
+    border:none;
+    margin-top:10px;
+    margin-bottom:10px;
+    width:100%;
+    }
+
 .hr-small{
 color: #f00;
 background-color:#E2E2E2;
@@ -300,6 +310,71 @@ border-color:#E2E2E2;
 -webkit-box-sizing:content-box; 
 box-sizing:content-box;
 height:18px;
+}
+
+.comments-box{
+    margin-top: 20px;
+    border:solid 1px;
+    border-color:#E2E2E2;
+    padding:8px;
+    position: relative;
+    height: 30px;
+}
+
+.comments-list{
+    
+    border:solid 0px;
+    border-color:#E2E2E2;
+    padding:8px;
+    position: relative;
+    height: 30px;
+    margin-bottom:10px;
+}
+
+.comments-avatar{
+    width: 26px;
+    height: 26px;
+    padding:0px;
+    position: relative;
+    top:2px;
+}
+
+.comments-text{
+    width:75%;
+    font-size:14px;
+    border:none;
+    -ms-box-sizing:content-box;
+    -moz-box-sizing:content-box;
+    -webkit-box-sizing:content-box; 
+    box-sizing:content-box;
+    top:5px;
+    position: absolute;
+    display: block;
+}
+
+.comments-text-2{
+    
+    font-size:14px;
+    border:none;
+    height:auto;
+    -ms-box-sizing:content-box;
+    -moz-box-sizing:content-box;
+    -webkit-box-sizing:content-box; 
+    box-sizing:content-box;
+    padding:10px;
+    top:5px;
+    position: absolute;
+    display: block;
+}
+
+.comments-send-icon{
+position:absolute;
+right:5px;
+top:12px;
+}
+
+.inline-element{
+    display: inline-flex;
 }
 
 .textfield-2{
@@ -486,16 +561,34 @@ text-align:center;
 }
 
 .order-variant{
-    font-size:12px;
+    font-size:14px;
     color:#383838;
     display:inline-block;
     margin-right:7px;
-    
     outline: 1px solid #ebebeb;
     padding:2px;
     padding-right: 7px;
     padding-left: 7px;
     margin-bottom: 7px;
+}
+
+.order-variant-2{
+    font-size:12px;
+    color:#383838;
+    display:inline-block;
+    margin-right:7px;
+    padding-right: 7px;
+
+}
+
+.variant-box{
+    background-color: #ffffff;
+    position:absolute;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    padding: 10px;
+    display: none;
+    width:auto;  
 }
 
 .marking-icon{
@@ -512,6 +605,11 @@ text-align:center;
 .face-icon-inline{
     width: 26px;
     height: 26px;
+}
+
+.guardian-icon-inline{
+    width: 40px;
+    height: 40px;
 }
 
 .wz-dot{
@@ -579,12 +677,6 @@ font-weight:600;
 }
 
 
-.action-icon{
-height:22px;
-width:22px;
-display:inline-block;
-
-}
 
 .action-icon{
     height:22px;
@@ -594,6 +686,18 @@ display:inline-block;
 }
 
 .action-icon:hover{
+    opacity:0.5;
+    cursor:pointer;
+}
+
+.action-icon-2{
+    height:22px;
+    width:22px;
+    display:inline-block;
+    opacity:0.2;
+}
+
+.action-icon-2:hover{
     opacity:0.5;
     cursor:pointer;
 }
@@ -649,6 +753,25 @@ opacity:0.6;
 .lowerfont{
 font-size:12px;
 color:#383838;
+}
+
+.lowerfont-3{
+    font-size:10px;
+    color:#acaaaa;
+    }
+    
+
+
+.lowerfontbold{
+    font-size:14px;
+    color:#383838;
+    font-weight: 600;
+    margin-bottom: 7px;
+    }
+    
+.deleted-comment{
+    text-decoration: line-through;
+    color:#d3d3d3;
 }
 
 

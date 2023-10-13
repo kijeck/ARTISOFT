@@ -31,9 +31,80 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
         
     </script>
 
+<script>
 
+let prevvariantnum = 0;
 
-    <script>
+function expandrow(rownum, order_number, ordered_product_id){
+    document.getElementById('row-'+rownum).style.display = 'table-row';
+    document.getElementById('arrow-up-'+rownum).style.display = 'inline-block';
+    document.getElementById('arrow-down-'+rownum).style.display = 'none';
+    commentslist(order_number, ordered_product_id);
+}
+
+function colapserow(rownum){
+    document.getElementById('row-'+rownum).style.display = 'none';
+    document.getElementById('arrow-up-'+rownum).style.display = 'none';
+    document.getElementById('arrow-down-'+rownum).style.display = 'inline-block';
+}
+
+function variantshow(variantnum){
+    document.getElementById('variant-'+variantnum).style.display = 'block';
+    if (prevvariantnum == 0){
+        prevvariantnum = variantnum;
+    }
+    else{
+        document.getElementById('variant-'+prevvariantnum).style.display = 'none';
+        prevvariantnum = variantnum;
+    }
+    
+}
+
+    function varianthide(variantnum){
+        document.getElementById('variant-'+variantnum).style.display = 'none';
+        document.getElementById('variant-'+prevvariantnum).style.display = 'none';
+        prevvariantnum = 0;
+    }
+
+    function deletecomment(comments_id, order_number, ordered_product_id){
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("commentslist-"+order_number+ordered_product_id).innerHTML = this.responseText;
+            }
+            };
+            xmlhttp.open("GET","comments-list.php?order_number="+order_number+"&ordered_product_id="+ordered_product_id+"&comments_id="+comments_id,true);
+            xmlhttp.send();
+            
+    }
+
+    function commentslist(order_number, ordered_product_id){
+        let xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            document.getElementById("commentslist-"+order_number+ordered_product_id).innerHTML = this.responseText;
+        }
+        };
+        xmlhttp.open("GET","comments-list.php?order_number="+order_number+"&ordered_product_id="+ordered_product_id,true);
+        xmlhttp.send();
+    }
+
+    function savecomment(type, order_number, ordered_product_id){
+        tresc = document.getElementById("CommentText-"+order_number+ordered_product_id).value;
+        if (type==1){
+            
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("commentslist-"+order_number+ordered_product_id).innerHTML = this.responseText;
+            }
+            };
+            xmlhttp.open("GET","comments-list.php?order_number="+order_number+"&ordered_product_id="+ordered_product_id+"&type="+type+"&commenttext="+tresc,true);
+            xmlhttp.send();
+            document.getElementById("CommentText-"+order_number+ordered_product_id).value = "";
+        }
+    }
+
 
     function searchproduct() {
         item = document.getElementById("SearchField").value;
@@ -41,7 +112,6 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
         Category = document.getElementById("Category").value;
         Status = document.getElementById("Status").value;
         Payment = document.getElementById("Payment").value;
-
         let xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
@@ -52,7 +122,6 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
         xmlhttp.open("GET","result-orders.php?item="+item+"&ClientName="+ClientName+"&Status="+Status+"&Payment="+Payment+"&Category="+Category,true);
         xmlhttp.send();
         RowPrev=0;
-
     }
 
     function HideSearch(){
@@ -137,14 +206,14 @@ include 'orders-menu.php';
 
             <?php
                 
-                $query = "SELECT DISTINCT product_variant, amount FROM pz WHERE amount > 0 GROUP BY product_variant;";
+                $query = "SELECT DISTINCT * FROM orders";
                 // FETCHING DATA FROM DATABASE
                 $result = mysqli_query($link, $query);
                 
                 if (mysqli_num_rows($result) > 0) {
                     // OUTPUT DATA OF EACH ROW
                     while($row = mysqli_fetch_assoc($result)) {
-                        echo "<option value='".$row['product_variant']."'>".$row['product_variant']."</option>";
+                        echo "<option value='".$row['payment']."'>".$row['payment']."</option>";
 
                     }
                 }

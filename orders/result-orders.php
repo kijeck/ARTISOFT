@@ -8,17 +8,22 @@ $Status = $_GET['Status'];
 $Category=$_GET['Category'];
 $Payment=$_GET['Payment'];
 $SortByClient="";
+$SortByPayment="";
 $SortByWord="";
 $SortByCategory="";
 $SortByStatus="";
 $CountTotal = 0;
 $shipment_tax=0;
 $Date=date("Y-m-d");
+session_start();
+$username = htmlspecialchars($_SESSION["username"]);
 
 
 include "../sql.php";
 
 include "../colors.php";
+
+
 
 if ($ClientName != ""){
     $SortByClient = "AND orders.company_name='$ClientName'";
@@ -26,6 +31,10 @@ if ($ClientName != ""){
 
 if ($Category != ""){
     $SortByCategory = "AND ordered_product.product_name='$Category'";
+}
+
+if ($Payment != ""){
+    $SortByPayment = "AND orders.payment='$Payment'";
 }
 
 if ($Status == ""){
@@ -40,13 +49,13 @@ else{
 
 if ($SearchWord != ""){
 
-    $SortByWord = "AND (product_code LIKE '%$SearchWord%' OR status LIKE '%$SearchWord%' OR product_name LIKE '%$SearchWord%' OR product_variant LIKE '%$SearchWord%' OR description LIKE '%$SearchWord%' OR category LIKE '%$SearchWord%' OR 'marking' LIKE '%$SearchWord%'  OR marking_code LIKE '%$SearchWord%'  OR amount LIKE '%$SearchWord%' OR order_number LIKE '%$SearchWord%' OR company_name LIKE '%$SearchWord%' OR client_name LIKE '%$SearchWord%' OR nip LIKE '%$SearchWord%'  OR email LIKE '%$SearchWord%'  OR address LIKE '%$SearchWord%'  OR place LIKE '%$SearchWord%'  OR phone_number LIKE '%$SearchWord%'  OR number LIKE '%$SearchWord%'  OR user LIKE '%$SearchWord%')";
+    $SortByWord = "AND (surname LIKE '%$SearchWord%' OR  username LIKE '%$SearchWord%' OR product_code LIKE '%$SearchWord%' OR status LIKE '%$SearchWord%' OR product_name LIKE '%$SearchWord%' OR product_variant LIKE '%$SearchWord%' OR description LIKE '%$SearchWord%' OR category LIKE '%$SearchWord%' OR 'marking' LIKE '%$SearchWord%'  OR marking_code LIKE '%$SearchWord%'  OR amount LIKE '%$SearchWord%' OR order_number LIKE '%$SearchWord%' OR company_name LIKE '%$SearchWord%' OR client_name LIKE '%$SearchWord%' OR nip LIKE '%$SearchWord%'  OR email LIKE '%$SearchWord%'  OR address LIKE '%$SearchWord%'  OR place LIKE '%$SearchWord%'  OR phone_number LIKE '%$SearchWord%'  OR number LIKE '%$SearchWord%'  OR user LIKE '%$SearchWord%')";
 }
 
 
         // TABLE HEADER
 
-        echo "<table width='100%' cellpadding=7 cellspacing=0 border=0>";
+        echo "<table width='100%' cellpadding=7 cellspacing=0 border=0 >";
         echo "<tr class='header-table'>";
         echo "<td width='50'></td>";
         echo "<td width='20'></td>";
@@ -58,7 +67,7 @@ if ($SearchWord != ""){
         echo "<td width='30' align='center'></td>";  // FACE ICON - PRODUCTION INDICATOR
         echo "<td>Znakowanie</td>";
         echo "<td width='20'></td>";
-        echo "<td  width='100' align='center'>Cena</td>";
+        echo "<td width='100' align='center'>Cena</td>";
         echo "<td width='10' align='center'></td>";
         echo "<td width='80' align='center'>Przesyłka</td>";
         
@@ -68,14 +77,13 @@ if ($SearchWord != ""){
         echo "</tr>";
 
 
-        $query = "SELECT DISTINCT * FROM orders LEFT JOIN ordered_product ON ordered_product.order_number = orders.number LEFT JOIN marking ON ordered_product_number = ordered_product.product_group LEFT JOIN shipment ON shipment.orders_number = orders.number  WHERE ordered_product.id > 0 $SortByClient $SortByCategory $SortByStatus $SortByWord GROUP BY product_group ORDER BY order_number DESC;";
+        $query = "SELECT DISTINCT * FROM orders LEFT JOIN ordered_product ON ordered_product.order_number = orders.number LEFT JOIN marking ON ordered_product_number = ordered_product.product_group LEFT JOIN shipment ON shipment.orders_number = orders.number LEFT JOIN users ON orders.order_guardian = users.username WHERE ordered_product.id > 0 $SortByClient $SortByCategory $SortByStatus $SortByWord $SortByPayment GROUP BY product_group ORDER BY order_number DESC;";
         // FETCHING DATA FROM DATABASE  ////////////////////////////////////////////////////////////////////////////////^^^^^^^^^^^^^^GROUP BY ordered_product.product_group
         $result = mysqli_query($link, $query);
 
         if (mysqli_num_rows($result) > 0) {
             // OUTPUT DATA OF EACH ROW
             while($row = mysqli_fetch_assoc($result)) {
-            $wynik = 0;
             $list_of_variants[] = "";
 
             $product_group = $row['product_group'];    
@@ -151,8 +159,10 @@ if ($SearchWord != ""){
                     while($row2 = mysqli_fetch_assoc($result2)) {
                         $variants_amount = $variants_amount + $row2['amount'];
                         $sum_total_netto = $sum_total_netto + $row2['total_netto'];
-                        $wynik++;
-                        echo "<div id='".$row2['id']."' class='order-variant'><a href='../magazyn/index.php?id=".$row2['id']."&amount=".$row2['amount']."&product_code=".$row2['product_code']."' target='_blank'><div class='color-icon-small' style='background-color:".ColorIcon($row2['product_variant'])."'></div></a><div style='display:inline-block'>". $row2['product_code'] ." - </div>". $row2['amount'] . " szt.</div>";
+                        //echo "<div id='".$row2['id']."' class='order-variant'><a href='../magazyn/index.php?id=".$row2['id']."&amount=".$row2['amount']."&product_code=".$row2['product_code']."' target='_blank'><div class='color-icon-small' style='background-color:".ColorIcon($row2['product_variant'])."'></div></a><div style='display:inline-block'>". $row2['product_code'] ." - </div>". $row2['amount'] . " szt.</div>";
+                        echo "<div  class='order-variant-2' title='".$row2['product_variant'] . " - " . $row2['amount']." szt.' onclick='variantshow(".$row2['id'].")' onmouseleave='varianthide(".$row2['id'].")'><div id='variant-".$row2['id']."' class='variant-box' ><div  class='order-variant-2' ><div class='color-icon-small' style='background-color:".ColorIcon($row2['product_variant'])."'></div>".$row2['product_variant']."</div><hr class='hr-2'><div>". $row2['product_code'] ."</div>". $row2['amount'] . " szt.<div><hr class='hr-2'><div class='action-icon'><a target='_blank' href='../magazyn/index.php?id=".$row2['id']."&amount=".$row2['amount']."&product_code=".$row2['product_code']."'><img src='../images/wz-icon-new.svg' width='100%' height='100%' border='0'></a></div></div></div><div style='display:inline-block'>". $row2['product_code'] ."</div></a></div></div>";
+
+                        //echo "<div id='".$row2['id']."'><a href='../magazyn/index.php?id=".$row2['id']."&amount=".$row2['amount']."&product_code=".$row2['product_code']."' target='_blank'><div class='color-icon-small' style='background-color:".ColorIcon($row2['product_variant'])."'></div></a></div>";
                     }
                 }  
 
@@ -163,8 +173,8 @@ if ($SearchWord != ""){
             
                 // WZ INDICATORS
 
-                    echo "<div class='wz-dot'><img src='../images/wz-icon-new.svg' width='100%' height='100%'></div>";
-                    echo "<div class='wz-dot'><img src='../images/wz-icon-new.svg' width='100%' height='100%'></div>";               
+                    //echo "<div class='wz-dot'><img src='../images/wz-icon-new.svg' width='100%' height='100%'></div>";
+                    //echo "<div class='wz-dot'><img src='../images/wz-icon-new.svg' width='100%' height='100%'></div>";               
 
                 // END
 
@@ -336,14 +346,7 @@ if ($SearchWord != ""){
                         echo "</div>";
                     }
 
-                  
-
-                    
-                    
-       
                 }
-
-                
 
             echo "</td>";
             echo "<td valign='middle'>";
@@ -361,12 +364,70 @@ if ($SearchWord != ""){
                 
                 echo "<div class='action-icon'><a href='' target='_blank'><img src='../images/message-icon.svg' width='100%' height='100%'></a></div>";
                 echo "<div class='action-icon'><a href='' target='_blank'><img src='../images/close-icon.svg' width='100%' height='100%'></a></div>";
-                echo "<div class='action-icon'><a href='' target='_blank'><img src='../images/arrow-down.svg' width='100%' height='100%'></a></div>";
+                echo "<div id='arrow-down-".$row['order_number']. $row['id']. "' class='action-icon' onclick='expandrow(".$row['order_number']. $row['id']. ",".$row['order_number'].",".$row['id'].")'><img src='../images/arrow-down.svg' width='100%' height='100%'></div>";
+                echo "<div id='arrow-up-".$row['order_number']. $row['id']. "' style='display:none' class='action-icon' onclick='colapserow(".$row['order_number']. $row['id']. ")'><img src='../images/arrow-up.svg' width='100%' height='100%'></div>";
                 
 
                 // END
 
             echo "</td>";
+            echo "</tr>";
+
+                // SECOND ROW
+
+            echo "<tr width='100%' style='display:none' id='row-".$row['order_number']. $row['id']. "'>";
+            echo "<td valign='top'></td>";
+            echo "<td valign='top'></td>";
+            echo "<td valign='top' align='left'><div style='width=100%' class='lowerfontbold'>Opiekun</div>";
+
+                // ORDER GUARDIAN - OWNER
+
+                echo "<div><img src='../images/".$row['order_guardian'].".png' class='guardian-icon-inline' title='".$row['name']." " .$row['surname']."'></div>";
+
+                echo "<div>".$row['name']."</div>";
+
+            echo "</td>";
+            echo "<td valign='top'><div class='lowerfontbold'>Kontakt</div>";
+            
+                // CLIENT DETAILS
+
+                echo "<div>".$row['client_name']."</div>";
+                echo "<div>tel. ".$row['phone_number']."</div>";
+                echo "<div>".$row['email']."</div>";
+
+            echo "</td>";
+            echo "<td valign='top'><div class='lowerfontbold'>Uwagi</div>";
+                // COMMENTS FROM CLIENT
+
+                echo "<div>".$row['comments']."</div>";
+
+            echo "</td>";     
+            echo "<td></td>";
+            echo "<td  colspan='5' valign='top'><div class='lowerfontbold'>Komenatarze</div>";
+                
+                // COMMENTS TO MARKING
+
+                echo "<div id='commentslist-".$row['order_number']. $row['id']. "'>";
+
+                echo "</div>";
+
+                echo "<div class='comments-box'>";
+                    
+                    echo "<div class='inline-element'><img src='../images/".$username.".png' class='comments-avatar'></div>";         
+                    echo "<input id='CommentText-".$row['order_number']."".$row['id']."' class='inline-element comments-text' type='text' placeholder='...'></input>";
+                    echo "<div class='inline-element comments-send-icon'><div class='action-icon' onclick='savecomment(1,".$row['order_number'].",".$row['id'].")' ><img src='../images/arrow-right.svg' width='100%' height='100%'></div>";
+                echo "</div>";
+
+            echo "</td>";
+            echo "<td align='center' valign='top'></td>";
+            echo "<td colspan='2' valign='top'><div class='lowerfontbold'>Adres do wysyłki </div>Bank Spółdzielczy w Suwałkach
+            Utrata 4
+            16-400 Suwałki
+            NIP: 8440005661</td>";
+            echo "<td valign='top'></td>";
+            echo "<td align='center' valign='top'></td>";
+           
+    
             echo "</tr>";
 
             }
