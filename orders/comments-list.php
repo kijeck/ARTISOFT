@@ -9,6 +9,7 @@ $commenttext="";
 $Date=date("Y-m-d H:i:s");
 $textstyle="";
 $comments_id="";
+$comment_notify=0;
 
 if (isset($_GET['comments_id'])){
     $comments_id = $_GET['comments_id'];
@@ -91,6 +92,7 @@ if (isset($_GET['comments_id'])){
                         echo "</td>"; 
                         echo "</tr>";
                         $textstyle="";
+                        $comment_notify=1;
                     }
                 } 
             echo "</table>";

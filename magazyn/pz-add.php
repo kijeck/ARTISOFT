@@ -318,14 +318,14 @@ include 'mag-menu.php';
         
        <?php
             
-            $query = "SELECT DISTINCT name, percent FROM tax;";
+            $query = "SELECT DISTINCT name, value FROM tax;";
             // FETCHING DATA FROM DATABASE
             $result = mysqli_query($link, $query);
             
             if (mysqli_num_rows($result) > 0) {
                 // OUTPUT DATA OF EACH ROW
                 while($row = mysqli_fetch_assoc($result)) {
-                    echo "<option value='".$row['percent']."'>".$row['name']."</option>";
+                    echo "<option value='".$row['value']."'>".$row['name']."</option>";
                 }
             } 
         ?>     

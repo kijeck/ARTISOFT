@@ -593,9 +593,64 @@ text-align:center;
 
 .marking-icon{
     display:inline-block;
-    width:40px;
+    min-width:40px;
     height:40px;
-    margin:2px;
+    margin-right:10px;
+}
+
+.marking-line{
+    display:inline-block;
+    height:40px;
+    width:1px;
+    margin-right:10px; 
+    background-image: url('images/marking/line.svg');
+}
+
+.numberofcolors{
+    display:inline-block;
+    height:8px;
+    width: 8px;
+    margin: 0px;
+    margin-right: 3px;
+    background-image: url('images/marking/color-dot.svg');
+}
+
+.numberofcolorsfullcolor{
+    display:inline-block;
+    height:8px;
+    width: 30px;
+    margin: 0px;
+    margin-right: 3px;
+    background-image: url('images/marking/fullcolor.svg');
+    background-repeat: no-repeat;
+}
+
+.marking-code-text{
+    margin: 0px;
+    line-height: 2;
+    font-size: 14px;
+    font-weight: 900;
+}
+.marking-location-text{
+    margin: 0px;
+    line-height: 0;
+    font-size: 11px;
+    font-weight: 400;
+}
+
+.currentmark{
+    color:#FCB8E1;
+}
+
+.currentmarkavatar{
+    width: 26px;
+    height: 26px;
+    border-radius: 20px 20px 20px 20px;
+-webkit-border-radius: 20px 20px 20px 20px;
+-moz-border-radius: 20px 20px 20px 20px;
+outline: 2px solid #fcb8e1;;
+outline-offset: 1px;
+margin-top:5px;
 }
 
 .order-variant:hover{

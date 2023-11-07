@@ -6,9 +6,6 @@ include 'sql.php';
 $user = htmlspecialchars($_SESSION["username"]);
 $UserName = htmlspecialchars($_SESSION["name"]) . " " . htmlspecialchars($_SESSION["surname"]);
 
-
-
-
 $Action=$_GET['Action'];
 $Date=date("Y-m-d H:i:s");
 

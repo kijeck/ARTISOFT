@@ -98,7 +98,7 @@ echo "<table width='100%' cellpadding=7 cellspacing=0 border=0>";
         $select_page = ($current_page*$results_per_page)-$results_per_page;
 
 
-        $query = "SELECT orders.number, orders.company_name, wz.date, wz.order_id, wz.product_name, wz.product_variant, wz.product_code, wz.amount AS wzamount, wz.id AS wzid, wz.unit_netto AS wzunitnetto, ordered_product.description  FROM wz LEFT JOIN ordered_product ON ordered_product.id = wz.order_id LEFT JOIN orders ON orders.number = ordered_product.order_number ORDER BY ordered_product.id DESC LIMIT $select_page, $results_per_page;";
+        $query = "SELECT orders.number, orders.company_name, wz.date, wz.order_id, wz.product_name, wz.product_variant, wz.product_code, wz.amount AS wzamount, wz.id AS wzid, wz.unit_netto AS wzunitnetto, ordered_product.description  FROM wz LEFT JOIN ordered_product ON ordered_product.id = wz.order_id LEFT JOIN orders ON orders.number = ordered_product.order_number ORDER BY wz.id DESC LIMIT $select_page, $results_per_page;";
         // FETCHING DATA FROM DATABASE
         $result = mysqli_query($link, $query);
 

@@ -78,6 +78,26 @@ function variantshow(variantnum){
             
     }
 
+    function commentpress(order_number, ordered_product_id){
+        if (event.key === "Enter") {
+            savecomment(1, order_number, ordered_product_id);
+        }
+
+    }
+
+    function changestatus(type, ordered_product_id){
+  
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("statusicon"+ordered_product_id).innerHTML = this.responseText;
+            }
+            };
+            xmlhttp.open("GET","status-icon.php?type="+type+"&ordered_product_id="+ordered_product_id,true);
+            xmlhttp.send();
+        
+    }
+
     function commentslist(order_number, ordered_product_id){
         let xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function() {
@@ -241,6 +261,33 @@ include 'orders-menu.php';
                         echo "<option value='".$row['status']."'>".$row['status']."</option>";
                         
 
+                    }
+                  
+                } 
+            ?>
+     
+        </select>
+        </div>
+    </div>
+
+    
+
+    <div class="col-5">
+        <div class="naglowek-3">Opiekun</div>
+        <div class="tresc"><select class="textfield" id="Guardian" onChange="searchproduct()"> 
+            <option value="">-</option>
+
+            <?php
+                
+                $query = "SELECT DISTINCT name, username, surname, order_guardian FROM orders LEFT JOIN users ON users.username = orders.order_guardian GROUP BY order_guardian;";
+                // FETCHING DATA FROM DATABASE
+                $result = mysqli_query($link, $query);
+                
+                if (mysqli_num_rows($result) > 0) {
+                    // OUTPUT DATA OF EACH ROW
+                    while($row = mysqli_fetch_assoc($result)) {
+                        echo "<option value='".$row['order_guardian']."'>".$row['name']." ".$row['surname']."</option>";
+                        
                     }
                   
                 } 

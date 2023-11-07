@@ -38,7 +38,7 @@ if ($Payment != ""){
 }
 
 if ($Status == ""){
-    $SortByStatus = "AND (ordered_product.status='przyjęte' OR ordered_product.status='wizualizacja' OR ordered_product.status='akceptacja' OR ordered_product.status='w produkcji' OR ordered_product.status='w realizacji' OR ordered_product.status='gotowe' )";
+    $SortByStatus = "AND (ordered_product.status='przyjęte' OR ordered_product.status='wizualizacja' OR ordered_product.status='akceptacja' OR ordered_product.status='przygotowalnia' OR ordered_product.status='w produkcji' OR ordered_product.status='w realizacji' OR ordered_product.status='gotowe' )";
 }
 else{
     $SortByStatus = "AND ordered_product.status='$Status'";
@@ -64,8 +64,9 @@ if ($SearchWord != ""){
         echo "<td>Produkt</td>";     
         echo "<td align='right'>wz</td>"; // WZ
         echo "<td width='80' align='right'>Ilość</td>";
-        echo "<td width='30' align='center'></td>";  // FACE ICON - PRODUCTION INDICATOR
         echo "<td>Znakowanie</td>";
+        echo "<td width='30' align='center'></td>";  // FACE ICON - PRODUCTION INDICATOR
+        
         echo "<td width='20'></td>";
         echo "<td width='100' align='center'>Cena</td>";
         echo "<td width='10' align='center'></td>";
@@ -73,7 +74,7 @@ if ($SearchWord != ""){
         
         echo "<td width='100' align='right'>Termin</td>";
         echo "<td width='10'></td>";  //VERTICAL RED LINE ALERT
-        echo "<td width='90' align='center'>Akcje</td>";
+        echo "<td width='50' align='center'>Akcje</td>";
         echo "</tr>";
 
 
@@ -116,31 +117,36 @@ if ($SearchWord != ""){
             echo "<td>";
                         
                 // STATUS ICONS
+                echo "<div id='statusicon" .$row['id']. "' onclick='changestatus(1, " .$row['id']. " )' style='cursor:pointer'>";
 
                 if ($row['status'] == 'przyjęte'){
-                    echo "<img src='../images/status-przyjete.svg' class='status-icon'>";
+                    echo "<div ><img src='../images/status-przyjete.svg' class='status-icon'></div>";
                 }   
                 if ($row['status'] == 'wizualizacja'){
-                    echo "<img src='../images/status-wizualizacja.svg' class='status-icon'>";
+                    echo "<div ><img src='../images/status-wizualizacja.svg' class='status-icon'></div>";
                 }  
                 if ($row['status'] == 'akceptacja'){
-                    echo "<img src='../images/status-akceptacja.svg' class='status-icon'>";
+                    echo "<div ><img src='../images/status-akceptacja.svg' class='status-icon'></div>";
+                }  
+                if ($row['status'] == 'przygotowalnia'){
+                    echo "<div ><img src='../images/status-przygotowalnia.svg' class='status-icon'></div>";
                 }  
                 if ($row['status'] == 'w realizacji'){
-                    echo "<img src='../images/status-w-realizacji.svg' class='status-icon'>";
+                    echo "<div ><img src='../images/status-w-realizacji.svg' class='status-icon'></div>";
                 }     
                 if ($row['status'] == 'w produkcji'){
-                    echo "<img src='../images/status-w-produkcji.svg' class='status-icon'>";
+                    echo "<div ><img src='../images/status-w-produkcji.svg' class='status-icon'></div>";
                 }      
                 if ($row['status'] == 'gotowe'){
-                    echo "<img src='../images/status-gotowe.svg' class='status-icon'>";
+                    echo "<div ><img src='../images/status-gotowe.svg' class='status-icon'></div>";
                 } 
+                echo "</div>";
             
 
                 // END
 
             echo "</td>";
-            echo "<td>".$row['order_number']. "-" .$row['id']. "<div class='lowerfont'>" . $date_of_order . "</div></td>";
+            echo "<td>".$row['order_number']. "-" .$row['id']. "<div class='lowerfont' ondblclick='changestatus(2, " .$row['id']. " )'>" . $date_of_order . "</div></td>";
             echo "<td>".$row['company_name']. " <div class='lowerfont'>" . $client_name . "</div></td>";
                         
             echo "<td>";
@@ -174,30 +180,10 @@ if ($SearchWord != ""){
                 // WZ INDICATORS
 
                     //echo "<div class='wz-dot'><img src='../images/wz-icon-new.svg' width='100%' height='100%'></div>";
-                    //echo "<div class='wz-dot'><img src='../images/wz-icon-new.svg' width='100%' height='100%'></div>";               
-
-                // END
-
-            echo "</td>";
-            echo "<td align='right'>".$variants_amount." szt.</td>";
-            echo "<td align='center'>";
-            
-                // FACE ICON - IN PRODUCTION
-                if ($row['status'] == 'w produkcji'){
-                    echo "<img src='../images/".$row['user'].".png' class='face-icon-inline' title='Przemysław Kijewski'>";
-                } 
-
-                // END
-            
-            echo "</td>";
-
-            echo "<td>";
-
-                // MARKING INDOCATORS
-
-                $ordered_product_number = $row['product_group'];
-
-                $query3 = "SELECT * FROM marking WHERE ordered_product_number = '$ordered_product_number'";
+                    //echo "<div class='wz-dot'><img src='../images/wz-icon-new.svg' width='100%' height='100%'></div>";        
+                    
+                    /*
+                    $query3 = "SELECT * FROM wz WHERE product_group = '$product_group' AND order_number = '$order_number'";
                 // FETCHING DATA FROM DATABASE
                 $result3 = mysqli_query($link, $query3);
         
@@ -205,12 +191,77 @@ if ($SearchWord != ""){
                     // OUTPUT DATA OF EACH ROW
                     while($row3 = mysqli_fetch_assoc($result3)) {
 
-                        echo "<img class='marking-icon' src='../images/marking/".$row3['marking_code']."-".$row3['number_of_colors'].".svg' title='".$row3['marking_location']."'>";
+                    }
+                } 
+                */
+
+                // END
+
+            echo "</td>";
+            echo "<td align='right'>".$variants_amount." szt.</td>";
+            
+
+            echo "<td>";
+
+                // MARKING INDOCATORS
+
+                $ordered_product_number = $row['product_group'];
+                $currentuser="";
+
+                $query3 = "SELECT * FROM marking WHERE ordered_product_number = '$ordered_product_number'";
+                // FETCHING DATA FROM DATABASE
+                $result3 = mysqli_query($link, $query3);
+
+        
+                if (mysqli_num_rows($result3) > 0) {
+                    // OUTPUT DATA OF EACH ROW
+                    while($row3 = mysqli_fetch_assoc($result3)) {
+
+                        //echo "<img class='marking-icon' src='../images/marking/".$row3['marking_code']."-".$row3['number_of_colors'].".svg' title='".$row3['marking_location']."'>";
+                        
+                        echo "<div class='marking-line'></div>";
+                        echo "<div class='marking-icon'>";
+                        if ($row3['current']==true){
+                            $currentmarkingclass = "currentmark";
+                            $currentuser = $row3['user2'];
+                        }
+                        else{
+                            $currentmarkingclass = "";
+                        }
+                            echo "<div class='marking-code-text ".$currentmarkingclass."'>".$row3['marking_code']."</div>";
+                            echo "<div class='marking-location-text'>".$row3['marking_location']."</div>";
+                            if ($row3['fullcolor']==true){
+                                echo "<div class='numberofcolorsfullcolor'></div>";
+                            }
+                            else{
+                                for ($i = 1; $i <= $row3['number_of_colors']; $i++) {
+                                    echo "<div class='numberofcolors'></div>";
+                                }
+                            }
+                            
+
+                            
+                           
+                        
+                        echo "</div>";
                     }
                 }  
 
                 // END
 
+            echo "</td>";
+            
+            echo "<td align='center'>";
+            
+            
+                // FACE ICON - IN PRODUCTION
+                if ($currentuser != ''){
+                    echo "<img src='../images/".$currentuser.".png' class='currentmarkavatar' title='Przemysław Kijewski'>";
+                } 
+                $currentuser="";
+
+                // END
+            
             echo "</td>";
             
             echo "<td align='center'>";
@@ -362,8 +413,9 @@ if ($SearchWord != ""){
             
                 // ACTION ICONS
                 
-                echo "<div class='action-icon'><a href='' target='_blank'><img src='../images/message-icon.svg' width='100%' height='100%'></a></div>";
-                echo "<div class='action-icon'><a href='' target='_blank'><img src='../images/close-icon.svg' width='100%' height='100%'></a></div>";
+                
+                //echo "<div class='action-icon'><a href='' target='_blank'><img src='../images/message-icon.svg' width='100%' height='100%'></a></div>";
+                //echo "<div class='action-icon'><a href='' target='_blank'><img src='../images/close-icon.svg' width='100%' height='100%'></a></div>";
                 echo "<div id='arrow-down-".$row['order_number']. $row['id']. "' class='action-icon' onclick='expandrow(".$row['order_number']. $row['id']. ",".$row['order_number'].",".$row['id'].")'><img src='../images/arrow-down.svg' width='100%' height='100%'></div>";
                 echo "<div id='arrow-up-".$row['order_number']. $row['id']. "' style='display:none' class='action-icon' onclick='colapserow(".$row['order_number']. $row['id']. ")'><img src='../images/arrow-up.svg' width='100%' height='100%'></div>";
                 
@@ -412,9 +464,10 @@ if ($SearchWord != ""){
                 echo "</div>";
 
                 echo "<div class='comments-box'>";
+                
                     
                     echo "<div class='inline-element'><img src='../images/".$username.".png' class='comments-avatar'></div>";         
-                    echo "<input id='CommentText-".$row['order_number']."".$row['id']."' class='inline-element comments-text' type='text' placeholder='...'></input>";
+                    echo "<input id='CommentText-".$row['order_number']."".$row['id']."' class='inline-element comments-text' type='text' placeholder='...' onkeypress='commentpress(".$row['order_number'].",".$row['id'].")'></input>";
                     echo "<div class='inline-element comments-send-icon'><div class='action-icon' onclick='savecomment(1,".$row['order_number'].",".$row['id'].")' ><img src='../images/arrow-right.svg' width='100%' height='100%'></div>";
                 echo "</div>";
 
