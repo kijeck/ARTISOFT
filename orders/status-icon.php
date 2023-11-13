@@ -159,7 +159,7 @@ $statusname="";
                     while($row = mysqli_fetch_assoc($result)) {
                         
                       
-
+                        echo "<div id='statusicon2" .$row['id']. "' onclick='changestatus(1, " .$row['id']. " ) , showwaiting2(" .$row['id']. ")' style='cursor:pointer;'>";
                         if ($row['status'] == 'przyjęte'){
                             echo "<div><img src='../images/status-przyjete.svg' class='status-icon'></div>";
                         }   
@@ -181,9 +181,7 @@ $statusname="";
                         if ($row['status'] == 'gotowe'){
                             echo "<div ><img src='../images/status-gotowe.svg' class='status-icon'></div>";
                         } 
-
-                        
-
+                        echo "</div>";
                 } 
             }
 

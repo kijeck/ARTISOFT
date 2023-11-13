@@ -85,17 +85,37 @@ function variantshow(variantnum){
 
     }
 
-    function changestatus(type, ordered_product_id){
-  
+    function changestatus(type, ordered_product_id){  
+        
             let xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
-                document.getElementById("statusicon"+ordered_product_id).innerHTML = this.responseText;
+                
+                document.getElementById("statusiconclick"+ordered_product_id).innerHTML = this.responseText;    
+                document.getElementById("statuswaiting"+ordered_product_id).style.display = 'none'; 
+                  
+
             }
+
             };
+            
             xmlhttp.open("GET","status-icon.php?type="+type+"&ordered_product_id="+ordered_product_id,true);
             xmlhttp.send();
-        
+            
+    }
+
+    function showwaiting(ordered_product_id){
+            document.getElementById("statusicon"+ordered_product_id).style.display = 'none';
+            //document.getElementById("statusicon2"+ordered_product_id).style.display = 'none';
+            document.getElementById("statuswaiting"+ordered_product_id).style.display = 'block';
+            
+    }
+
+    function showwaiting2(ordered_product_id){
+            //document.getElementById("statusicon"+ordered_product_id).style.display = 'none';
+            document.getElementById("statusicon2"+ordered_product_id).style.display = 'none';
+            document.getElementById("statuswaiting"+ordered_product_id).style.display = 'block';
+            
     }
 
     function commentslist(order_number, ordered_product_id){
@@ -132,6 +152,7 @@ function variantshow(variantnum){
         Category = document.getElementById("Category").value;
         Status = document.getElementById("Status").value;
         Payment = document.getElementById("Payment").value;
+        Guardian = document.getElementById("Guardian").value;
         let xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
@@ -139,7 +160,7 @@ function variantshow(variantnum){
         }
         };
        
-        xmlhttp.open("GET","result-orders.php?item="+item+"&ClientName="+ClientName+"&Status="+Status+"&Payment="+Payment+"&Category="+Category,true);
+        xmlhttp.open("GET","result-orders.php?item="+item+"&ClientName="+ClientName+"&Status="+Status+"&Payment="+Payment+"&Guardian="+Guardian+"&Category="+Category,true);
         xmlhttp.send();
         RowPrev=0;
     }
