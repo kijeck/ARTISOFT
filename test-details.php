@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+<?php
+
+$order_id = 35;
+
+$url = "https://artilon-test.pl/api/orderDetails/".$order_id."?token=mIuQHYxLYSXTWX63UYfJE0X75YKOjfsr2SeHaUHeyqJSXrcpOFauUZ2pqybwiPi8";
+
+$curl = curl_init();
+
+curl_setopt_array($curl, array(
+  CURLOPT_URL => $url,
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_ENCODING => 'UTF-8',
+  CURLOPT_MAXREDIRS => 10,
+  CURLOPT_TIMEOUT => 0,
+  CURLOPT_FOLLOWLOCATION => true,
+  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+  CURLOPT_CUSTOMREQUEST => 'GET',
+));
+
+
+curl_close($curl);
+$response = json_decode(curl_exec($curl), true);
+print_r($response['orders']);
+
+
+echo "<br><br>";
+
+include 'sql.php';
+
+$licz=-1;
+foreach ($response as &$value) {
+    $licz++;
+    echo "Numer id: " . $value['id'] . "<br />";
+    
+    if ($value['paid'] == true){
+        echo "Opłacone: TAK<br />";
+    }else{
+        echo "Opłacone: NIE<br />";
+    }
+
+    echo "Data: " . $value['orderDate'] . "<br />";
+    echo "Uwagi ogólne: " . $value['comment'] . "<br />";
+    echo "Status: " . $value['apiStatusText'] . "<br />";
+    echo "Numer FV: " . $value['invoiceNumber'] . "<br />";
+    
+    
+    if (!$value['clientData'] == null){
+    echo "<br><br>Klientdata:<br>";
+    echo "Imię i nazwisko: " . $value['clientData']['name'] . "<br />";
+    echo "Nazwa firmy: " . $value['clientData']['companyName'] . "<br />";
+    echo "NIP: " . $value['clientData']['nip'] . "<br />";
+    echo "Adres: " . $value['clientData']['address'] . "<br />";
+    echo "Kod pocztowy: " . $value['clientData']['zipCode'] . "<br />";
+    echo "Miejscowość: " . $value['clientData']['city'] . "<br />";
+    echo "Kraj: " . $value['clientData']['country'] . "<br />";
+    echo "tel.: " . $value['clientData']['telephone'] . "<br />";
+    echo "email: " . $value['clientData']['email'] . "<br />";
+    }
+
+    echo "<br>WYSYŁKA:<br><br>";
+
+    echo "Imię i nazwisko: " . $value['clientData']['nameShipping'] . "<br />";
+    echo "Nazwa firmy: " . $value['clientData']['companyNameShipping'] . "<br />";
+    echo "Adres: " . $value['clientData']['addressShipping'] . "<br />";
+    echo "Numer bud: " . $value['clientData']['numberOfBuildingShipping'] . "<br />";
+    echo "Kod pocztowy: " . $value['clientData']['zipCodeShipping'] . "<br />";
+    echo "Miejscowość: " . $value['clientData']['cityShipping'] . "<br />";
+    echo "Kraj: " . $value['clientData']['countryShipping'] . "<br />";
+
+
+    echo "--------<br>";
+
+    echo "hash: " . $value['hash'] . "<br />";
+    echo "tryb: " . $value['deliveryType'] . "<br />";
+
+    // VARIABLES
+
+    $number = $value['id'];
+    $invoiceNumber = $value['invoiceNumber'];
+    $dateOfOrder = $value['orderDate'];
+    $comment = $value['comment'];
+    $payment = "brak";
+    $paid = $value['paid'];
+    $mode = $value['deliveryType'];
+    //$mainStatus = $value['apiStatusText'];
+    $mainStatus = 'przyjęte';
+    $source = "sklep";
+    $orderGuardian = $value['user']['name'];
+    $clientName = $value['clientData']['name'];
+    $email = $value['clientData']['email'];
+    $phoneNumber = $value['clientData']['telephone'];
+    $companyName = $value['clientData']['companyName'];
+    $nip = $value['clientData']['nip'];
+    $address = $value['clientData']['address'];
+    $zipCode = $value['clientData']['zipCode'];
+    $city = $value['clientData']['city'];
+    $country = $value['clientData']['country'];
+
+    if ($orderGuardian == 'Przemysław Kijewski'){
+        $orderGuardian = 'pk';
+    }
+
+    $shippingName = $value['clientData']['nameShipping'];
+    $shippingCompanyName = $value['clientData']['companyNameShipping'];
+    $shippingAddress = $value['clientData']['addressShipping'];
+    $shippingNumberOfBuilding =  $value['clientData']['numberOfBuildingShipping'];
+    $shippingZipCode =  $value['clientData']['zipCodeShipping'];
+    $shippingCity =  $value['clientData']['cityShipping'];
+    $shippingCountry = $value['clientData']['countryShipping'];
+
+    
+
+
+
+    // INSERT TO DB - ORDERS
+
+        $sql = "INSERT INTO orders (number, invoice_number, date_of_order, comments, payment, paid, mode, main_status, source, order_guardian, client_name, email, phone_number, company_name, nip, address, zip_code, place, country, nameShipping, companyNameShipping, addressShipping, numberOfBuildingShipping, zipCodeShipping, cityShipping, countryShipping) 
+        VALUES ('$number', '$invoiceNumber', '$dateOfOrder', '$comment' , '$payment' , '$paid' , '$mode' , '$mainStatus' , '$source' , '$orderGuardian' , '$clientName' , '$email' , '$phoneNumber' , '$companyName' , '$nip' , '$address' , '$zipCode' , '$city' , '$country' , '$shippingName' , '$shippingCompanyName' , '$shippingAddress' , '$shippingNumberOfBuilding' , '$shippingZipCode' , '$shippingCity' , '$shippingCountry' )";
+            if (mysqli_query($link, $sql)) {
+            } 
+            else {
+            echo "Error: " . $sql . "<br>" . mysqli_error($link);
+            }    
+
+    // END OF DB - ORDERS    
+
+
+
+    
+    echo "<br>";
+
+    echo "Produkty:<br>";
+
+    // LIST OF PRODUCTS
+    $grupa1 = '';
+    $licz2=-1;
+      foreach ($response['orders']['orderedProducts'] as &$value2) {
+        $licz2++;
+        
+        
+        echo "<h2>Produkt ".$value['id'] . "/".$value['orderedProducts'][$licz2]['orderedProductGroup']['id']."</h2>";
+        echo "Grupa: " .  $value['orderedProducts'][$licz2]['orderedProductGroup']['id'] . "<br>";
+        echo "Uwagi do znakowania: " .  $value['orderedProducts'][$licz2]['orderedProductGroup']['comment'] . "<br>";
+
+        echo $value2['name'] . " " . $value2['productVariant']['color'] . " " . $value2['productVariant']['variantCode'] . " " . $value2['amount'] . " " . $value2['totalNetto'];
+
+        // VARIABLES
+
+        $productName = $value2['name'];
+        $productCode = $value2['productVariant']['variantCode'];
+        $productVariant = $value2['productVariant']['color'];
+        $productGroup = $value['orderedProducts'][$licz2]['orderedProductGroup']['id'];
+        $productAmount = $value2['amount'];
+        $productTotalNetto = $value2['totalNetto'];
+        $productUnitNetto = $value2['unitNetto'];
+        $productComment = $value['orderedProducts'][$licz2]['orderedProductGroup']['comment'];
+        $category = null;
+        $vat = $value2['vat']*100;
+        echo "VAT: " . $vat;
+
+
+        // INSERT TO DB - ORDERED PRODUCTS
+
+        $sql = "INSERT INTO ordered_product (product_group, product_name, product_code, product_variant, category, amount, unit_netto, total_netto, vat, order_number, own_magazine, supplier, status, comment) 
+        VALUES ('$productGroup', '$productName', '$productCode', '$productVariant', 'brak', '$productAmount', '$productUnitNetto', '$productTotalNetto', '$vat', '$number', '', '', '$mainStatus', '$productComment')";
+            if (mysqli_query($link, $sql)) {
+            } 
+            else {
+            echo "Error: " . $sql . "<br>" . mysqli_error($link);
+            }    
+
+        // END OF DB - ORDERED PRODUCTS  
+
+        
+      
+        
+        echo "<br><br>";
+        // LIST OF MARKINGS
+        if ($grupa1 != $value2['name']){
+            foreach ($value2['orderedProductMarkings'] as &$value3) {
+
+            echo "<h2>Marking ". $value['id'] . "/" . $value['orderedProducts'][$licz2]['orderedProductGroup']['id']."</h2>";
+                
+            echo "Lokalizacja: " .  $value3['location']['name'];
+            echo "<br>";
+            echo "Jm: " .  $value3['location']['unitOfMeasure'];
+            echo "<br>";
+            echo "szerokość: " .  round($value3['location']['printWidth'],0);
+            echo "<br>";
+            echo "wysokość: " .  round($value3['location']['printHeight'],0);
+            echo "<br>";
+
+            echo "RODZAJ: " .  $value3['technique']['technique']['name'];
+            echo "<br>";
+            echo "Grupa: " .  $value3['technique']['technique']['markingCode'];
+            echo "<br>";
+            echo "Ilość kolorów: " .  $value3['numberOfColors'];
+            echo "<br>";
+                if (!$value3['file'] == null){
+                    echo "Plik: " .  htmlspecialchars($value3['file']['filename']);
+                }
+                
+            echo "<br>";
+            echo "Cena znakowania: " .  $value3['price'];
+            echo "<hr>";
+
+
+            // VARIABLES
+
+                $markingName =  $value3['technique']['technique']['name'];
+                $markingCode = $value3['technique']['technique']['markingCode'];
+                $markingNumberOfColor =  $value3['numberOfColors'];
+                $markingPrice =  $value3['price'];
+                $markingFullColor = 0;
+                
+                $markingLocation = $value3['location']['name'];
+                $markingUnits = $value3['location']['unitOfMeasure'];
+                $markingPrintWidth = round($value3['location']['printWidth'],0);
+                $markingPrintHeight = round($value3['location']['printHeight'],0);
+
+                
+                
+                
+
+
+                // INSERT TO DB - ORDERED PRODUCTS
+
+                $sql = "INSERT INTO marking (order_id, ordered_product_group, marking_name, marking_code, number_of_colors, fullcolor, price, marking_location, units, print_width, print_height) 
+                VALUES ('$number', '$productGroup', '$markingName', '$markingCode', '$markingNumberOfColor', '$markingFullColor', '$markingPrice', '$markingLocation', '$markingUnits', '$markingPrintWidth', '$markingPrintHeight')";
+                    if (mysqli_query($link, $sql)) {
+                    } 
+                    else {
+                    echo "Error: " . $sql . "<br>" . mysqli_error($link);
+                    }    
+
+            // END OF DB - ORDERED PRODUCTS  
+
+            
+            }
+   
+        }
+        $grupa1 = $value2['name'];
+
+    }
+
+
+    echo "<hr>";
+
+
+
+}
+
+
+
+
+
+
+
+
+
+?>
+
+</body>
+</html>
+

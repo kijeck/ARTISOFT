@@ -1,4 +1,5 @@
 <?php
+//include "../sql.php";
 $Date=date("Y-m-d H:i:s");
 
 $data = array();   
@@ -31,7 +32,7 @@ $query = "SELECT id, amount, product_code FROM pz WHERE amount > 0 ORDER BY id D
         $amount_sum = 0;
         $max_price = 555;
 
-        $query = "SELECT DISTINCT id, amount, product_code, unit_netto FROM pz WHERE amount > 0 GROUP BY product_code";
+        $query = "SELECT DISTINCT id, amount, product_code, product_name, unit_netto FROM pz WHERE (amount > 0 AND unit_netto > 0) GROUP BY product_code";
         // FETCHING DATA FROM DATABASE
         $result = mysqli_query($link, $query);
 
@@ -40,10 +41,11 @@ $query = "SELECT id, amount, product_code FROM pz WHERE amount > 0 ORDER BY id D
             while($row = mysqli_fetch_assoc($result)) {
                 
                 $product_code_sum = $row['product_code'];
+                $product_name = $row['product_name'];
 
                 $amount_sum = 0;
 
-                    $query = "SELECT id, amount, product_code, unit_netto FROM pz WHERE product_code = '$product_code_sum' and amount > 0";
+                    $query = "SELECT id, amount, product_code, unit_netto FROM pz WHERE product_code = '$product_code_sum' AND  (amount > 0 AND unit_netto > 0)";
                     // FETCHING DATA FROM DATABASE
                     $result2 = mysqli_query($link, $query);
 
@@ -51,12 +53,10 @@ $query = "SELECT id, amount, product_code FROM pz WHERE amount > 0 ORDER BY id D
                         // OUTPUT DATA OF EACH ROW
                         while($row2 = mysqli_fetch_assoc($result2)) {
                             $amount_sum = $amount_sum + $row2['amount'];
-                        
-
                         }  
                     }
 
-                    $query = "SELECT id, amount, product_code, MAX(unit_netto) AS max_unit_netto FROM pz WHERE product_code = '$product_code_sum' and amount > 0";
+                    $query = "SELECT id, amount, product_name, product_code, MAX(unit_netto) AS max_unit_netto FROM pz WHERE product_name = '$product_name' and amount > 0";
                     // FETCHING DATA FROM DATABASE
 
                     $result3 = mysqli_query($link, $query);
@@ -78,10 +78,13 @@ $query = "SELECT id, amount, product_code FROM pz WHERE amount > 0 ORDER BY id D
             }  
         } 
 
+        //print_r($data);
+        
+
         $data[] = $data2;
         $json_data = json_encode($data);
         file_put_contents('api/artilon-stock.json', $json_data);
-     
+        
 
         
 ?>

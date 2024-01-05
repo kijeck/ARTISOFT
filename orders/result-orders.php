@@ -55,13 +55,16 @@ else{
 
 if ($SearchWord != ""){
 
-    $SortByWord = "AND (surname LIKE '%$SearchWord%' OR  username LIKE '%$SearchWord%' OR product_code LIKE '%$SearchWord%' OR status LIKE '%$SearchWord%' OR product_name LIKE '%$SearchWord%' OR product_variant LIKE '%$SearchWord%' OR description LIKE '%$SearchWord%' OR category LIKE '%$SearchWord%' OR 'marking' LIKE '%$SearchWord%'  OR marking_code LIKE '%$SearchWord%'  OR amount LIKE '%$SearchWord%' OR order_number LIKE '%$SearchWord%' OR company_name LIKE '%$SearchWord%' OR client_name LIKE '%$SearchWord%' OR nip LIKE '%$SearchWord%'  OR email LIKE '%$SearchWord%'  OR address LIKE '%$SearchWord%'  OR place LIKE '%$SearchWord%'  OR phone_number LIKE '%$SearchWord%'  OR number LIKE '%$SearchWord%'  OR user LIKE '%$SearchWord%')";
+    $SortByWord = "AND (surname LIKE '%$SearchWord%' OR  username LIKE '%$SearchWord%' OR product_code LIKE '$SearchWord' OR status LIKE '%$SearchWord%' OR product_name LIKE '%$SearchWord%' OR product_variant LIKE '%$SearchWord%' OR description LIKE '%$SearchWord%' OR category LIKE '%$SearchWord%' OR order_number LIKE '$SearchWord' OR company_name LIKE '%$SearchWord%' OR client_name LIKE '%$SearchWord%' OR nip LIKE '%$SearchWord%'  OR email LIKE '%$SearchWord%'  OR address LIKE '%$SearchWord%' )";
 }
+
+$totalSumOrder = 0;
+$vat=0;
 
 
         // TABLE HEADER
 
-        echo "<table width='100%' cellpadding=7 cellspacing=0 border=0 >";
+        echo "<table width='100%' cellpadding=7 cellspacing=0 border=0>";
         echo "<tr class='header-table'>";
         echo "<td width='50'></td>";
         echo "<td width='20'></td>";
@@ -70,7 +73,7 @@ if ($SearchWord != ""){
         echo "<td>Produkt</td>";     
         echo "<td align='right'>wz</td>"; // WZ
         echo "<td width='80' align='right'>Ilość</td>";
-        echo "<td>Znakowanie</td>";
+        echo "<td width='250'>Znakowanie</td>";
         echo "<td width='30' align='center'></td>";  // FACE ICON - PRODUCTION INDICATOR
         
         echo "<td width='20'></td>";
@@ -80,11 +83,11 @@ if ($SearchWord != ""){
         
         echo "<td width='100' align='right'>Termin</td>";
         echo "<td width='10'></td>";  //VERTICAL RED LINE ALERT
-        echo "<td width='50' align='center'>Akcje</td>";
+        echo "<td width='60' align='center'>Akcje</td>";
         echo "</tr>";
 
 
-        $query = "SELECT DISTINCT * FROM orders LEFT JOIN ordered_product ON ordered_product.order_number = orders.number LEFT JOIN marking ON ordered_product_number = ordered_product.product_group LEFT JOIN shipment ON shipment.orders_number = orders.number LEFT JOIN users ON orders.order_guardian = users.username WHERE ordered_product.id > 0 $SortByClient $SortByCategory $SortByStatus $SortByWord $SortByPayment $SortByGuardian GROUP BY product_group ORDER BY order_number DESC;";
+        $query = "SELECT DISTINCT * FROM orders LEFT JOIN ordered_product ON ordered_product.order_number = orders.number LEFT JOIN marking ON order_id = orders.number LEFT JOIN shipment ON shipment.orders_number = orders.number LEFT JOIN users ON orders.order_guardian = users.username WHERE ordered_product.id > 0 $SortByClient $SortByCategory $SortByStatus $SortByWord $SortByPayment $SortByGuardian GROUP BY product_group ORDER BY order_number DESC;";
         // FETCHING DATA FROM DATABASE  ////////////////////////////////////////////////////////////////////////////////^^^^^^^^^^^^^^GROUP BY ordered_product.product_group
         $result = mysqli_query($link, $query);
 
@@ -124,11 +127,14 @@ if ($SearchWord != ""){
                         
                 // STATUS ICONS
                 
-                echo "<div id='statusicon" .$row['id']. "' onclick='changestatus(1, " .$row['id']. "), showwaiting(" .$row['id']. ")' style='cursor:pointer'>";
+                echo "<div id='statusicon" .$row['id']. "' onclick='changestatus(1, " .$row['id']. ", ".$row['order_number']."), showwaiting(" .$row['id']. ")' style='cursor:pointer'>";
 
+                    if ($row['status'] == 'złożone'){
+                        echo "<div ><img src='../images/status-zlozone.svg' class='status-icon'></div>";
+                    }   
                     if ($row['status'] == 'przyjęte'){
                         echo "<div ><img src='../images/status-przyjete.svg' class='status-icon'></div>";
-                    }   
+                    } 
                     if ($row['status'] == 'wizualizacja'){
                         echo "<div ><img src='../images/status-wizualizacja.svg' class='status-icon'></div>";
                     }  
@@ -154,10 +160,14 @@ if ($SearchWord != ""){
             
 
                 // END
+                    
+            $date_of_order = date("d-m-Y", strtotime($date_of_order));  
 
             echo "</td>";
-            echo "<td>".$row['order_number']. "-" .$row['id']. "<div class='lowerfont' ondblclick='changestatus(2, " .$row['id']. " ), showwaiting(" .$row['id']. ")'>" . $date_of_order . "</div></td>";
+            echo "<td>".$row['order_number']."<div class='lowerfont' ondblclick='changestatus(2, " .$row['id']. ", ".$row['order_number']." ), showwaiting(" .$row['id']. ")'>" . $date_of_order . "</div></td>";
             echo "<td>".$row['company_name']. " <div class='lowerfont'>" . $client_name . "</div></td>";
+            
+
                         
             echo "<td>";
             echo $row['product_name'] . " <span style='font-weight:500'>".$row['description']. "</span>";
@@ -179,6 +189,7 @@ if ($SearchWord != ""){
 
                         $variants_amount = $variants_amount + $row2['amount'];
                         $sum_total_netto = $sum_total_netto + $row2['total_netto'];
+                        $productComment = $row2['comment'];
 
                         array_push($variantsarray, $row2['id']);
                         
@@ -245,11 +256,13 @@ if ($SearchWord != ""){
 
                 // MARKING INDOCATORS
 
-                $ordered_product_number = $row['product_group'];
+                $ordered_product_group = $row['product_group'];
+                
                 $currentuser="";
                 $ifmark=0;
-
-                $query3 = "SELECT * FROM marking WHERE ordered_product_number = '$ordered_product_number'";
+                $markingCost = 0;
+                $markingTotalCost = 0;
+                $query3 = "SELECT * FROM marking WHERE ordered_product_group = '$ordered_product_group' AND order_id = '$order_number'";
                 // FETCHING DATA FROM DATABASE
                 $result3 = mysqli_query($link, $query3);
 
@@ -262,6 +275,8 @@ if ($SearchWord != ""){
                         echo "<div style='display: inline-block'>";
                             echo "<div class='marking-line'></div>";
                             echo "<div class='marking-icon'>";
+                            $markingCost = floatval($row3['price']);
+                            
                             if ($row3['current']==true){
                                 $currentmarkingclass = "currentmark";
                                 $currentuser = $row3['user2'];
@@ -270,7 +285,7 @@ if ($SearchWord != ""){
                                 $currentmarkingclass = "";
                             }
                                 echo "<div class='marking-code-text ".$currentmarkingclass."'>".$row3['marking_code']."</div>";
-                                echo "<div class='marking-location-text'>".$row3['marking_location']."</div>";
+                                echo "<div class='marking-location-text'>".substr(($row3['marking_location']),0,6)."</div>";
                                 if ($row3['fullcolor']==true){
                                     echo "<div class='numberofcolorsfullcolor'></div>";
                                 }
@@ -283,12 +298,16 @@ if ($SearchWord != ""){
                             
                             echo "</div>";
                         echo "</div>";   
-
+                       
                     }
                 }  
                 if ($ifmark==0){
-                    echo "bez nadruku";
+                    
+                    echo "---";
                 }
+
+                
+                
 
                 // END
 
@@ -343,13 +362,18 @@ if ($SearchWord != ""){
                     echo "<img src='../images/payment-cash.svg' class='payment-icon' title='".$row['payment']."'>";
                 }
 
-            echo "</td>";
+                echo "<img src='../images/payment-bank-paid.svg' class='payment-icon' title='".$row['payment']."'>";
 
+            echo "</td>";
+            $sum_total_netto = $sum_total_netto + $markingCost;
+            $totalSumOrder = $totalSumOrder + $sum_total_netto;
             $sum_total_gross = $sum_total_netto * ((100+$vat)/100);
+            
 
             echo "<td align='center'><div>" . sprintf('%01.2f', $sum_total_gross) . " zł</div><div class='lowerfont'>" .  sprintf('%01.2f', $sum_total_netto) ." zł</div></td>";
             
                 // SHIPMENT DETAILS
+               
           
                 $total_shipment=0;
                 $shipment_variant="";
@@ -379,10 +403,12 @@ if ($SearchWord != ""){
 
                 // END
                 echo "<td align='center'>";
+                
 
             echo $shipment_indicator;
             echo "</td>";
             echo "<td align='center'>";
+            echo "kurier"; 
 
                 // SHIPMENTS RESULTS
 
@@ -399,7 +425,7 @@ if ($SearchWord != ""){
             echo "<td align='right'>";
             
                 // DUE DATE DETAILS
-
+                echo "2024-01-24"; 
 
                 $date_before = new DateTime($due_date); // For today/now, don't pass an arg.
                 $date_before->modify("-1 day");
@@ -442,45 +468,27 @@ if ($SearchWord != ""){
                 }
 
             echo "</td>";
+
+
             echo "<td valign='middle'>";
 
                 // ORDER TIME MODE - SLOW, NORMAL, FAST
 
                 // IF SLOW
-                if ($row['mode'] == 1){
+               
                     
                     if ($due_date == $Date){
                         echo "<img src='../images/red-line-vert.svg' width='6' height='40'></td>";
     
                     }
-                    else{
-                        echo "<img src='../images/red-line-vert-slow.svg' width='6' height='40'></td>";
-                    }
 
-                }   
-
-                // IF NORMAL
-
-                if ($row['mode'] == 2){
            
                     if ($due_date == $Date){
                         echo "<img src='../images/red-line-vert.svg' width='6' height='40'></td>";
                     }
-                } 
-
-                //IF FAST
                 
-                if ($row['mode'] == 3){
-                    
 
-                    if ($due_date == $Date){
-                        echo "<img src='../images/red-line-vert.svg' width='6' height='40'></td>";
-    
-                    }
-                    else{
-                        echo "<img src='../images/red-line-vert-fast.svg' width='6' height='40'></td>";
-                    }
-                } 
+              
 
 
 
@@ -488,9 +496,28 @@ if ($SearchWord != ""){
                 // END
 
             
-            echo "<td align='center'>";
+            echo "<td align='right'>";
             
                 // ACTION ICONS
+
+                 // IF SLOW
+                 if ($row['mode'] == 2){
+                    
+             
+                    echo "<div class='mode-icon'><img src='../images/slow-mode.svg' width='25' height='25'></div>";
+
+                }   
+
+              
+                //IF FAST
+                
+                if ($row['mode'] == 1){
+                    
+
+                    
+                        echo "<div class='mode-icon'><img src='../images/fast-2-mode.svg' width='25' height='25'></div>";
+                    
+                } 
                 
                 
                 //echo "<div class='action-icon'><a href='' target='_blank'><img src='../images/message-icon.svg' width='100%' height='100%'></a></div>";
@@ -524,7 +551,9 @@ if ($SearchWord != ""){
 
                 echo "<div>".$row['client_name']."</div>";
                 echo "<div>tel. ".$row['phone_number']."</div>";
-                echo "<div>".$row['email']."</div>";
+                echo "<div>".$row['email']."</div><br>";
+                echo "<div class='lowerfontbold'>Uwagi</div>";
+                echo "<div>".$row['comments']."</div>";
 
             echo "</td>";
             echo "<td colspan='2' valign='top'>";
@@ -550,10 +579,12 @@ if ($SearchWord != ""){
             } 
             }
                 echo "<br>";
-                echo "<div class='lowerfontbold'>Uwagi</div>";
+                echo "<div class='lowerfontbold'>Uwagi do produktu</div>";
                 // COMMENTS FROM CLIENT
 
-                echo "<div>".$row['comments']."</div>";
+                echo "<div>".$productComment."</div>";
+        
+
 
             echo "</td>";     
             
@@ -575,10 +606,21 @@ if ($SearchWord != ""){
 
             echo "</td>";
             echo "<td align='center' valign='top'></td>";
-            echo "<td colspan='2' valign='top'><div class='lowerfontbold'>Adres do wysyłki </div>Bank Spółdzielczy w Suwałkach
-            Utrata 4
-            16-400 Suwałki
-            NIP: 8440005661</td>";
+
+            // SHIPPING ADDRESS FROM ORDER
+
+            echo "<td colspan='2' valign='top'><div class='lowerfontbold'>Adres do wysyłki </div>";
+
+            echo "<div>" . $row['nameShipping'] . "</div>";
+            echo "<div>" . $row['companyNameShipping'] . "</div>";
+            echo "<div>" . $row['addressShipping'] . " " .  $row['numberOfBuildingShipping'] . "</div>";
+            echo "<div>" . $row['zipCodeShipping'] . " " . $row['cityShipping'] . "</div>";
+            echo "<div>" . $row['countryShipping'] . "</div>";
+            
+            // END 
+
+
+            echo "</td>";
             echo "<td valign='top'></td>";
             echo "<td align='center' valign='top'></td>";
            
@@ -588,6 +630,8 @@ if ($SearchWord != ""){
             }
         } 
 
+        echo "razem: " . round(($totalSumOrder),2) . " zł netto / " . round(($totalSumOrder * ((100+$vat)/100)),2) . " zł brutto";
+        $testowy = "5";
 ?>
 <style>
 .spinner {

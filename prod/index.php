@@ -1,7 +1,7 @@
 <?php
 // Initialize the session
-
-include "../check_orders.php";
+session_start();
+include "../sql.php";
 $Date=date("Y-m-d H:i:s");
  
 // Check if the user is logged in, if not then redirect him to login page
@@ -39,7 +39,7 @@ function expandrow(rownum, order_number, ordered_product_id){
     document.getElementById('row-'+rownum).style.display = 'table-row';
     document.getElementById('arrow-up-'+rownum).style.display = 'inline-block';
     document.getElementById('arrow-down-'+rownum).style.display = 'none';
-    commentslist(order_number, ordered_product_id);
+    commentslist(rownum, order_number, ordered_product_id);
 }
 
 function colapserow(rownum){
@@ -73,19 +73,19 @@ function variantshow(variantnum){
                 document.getElementById("commentslist-"+order_number+ordered_product_id).innerHTML = this.responseText;
             }
             };
-            xmlhttp.open("GET","comments-list.php?order_number="+order_number+"&ordered_product_id="+ordered_product_id+"&comments_id="+comments_id,true);
+            xmlhttp.open("GET","../orders/comments-list.php?order_number="+order_number+"&ordered_product_id="+ordered_product_id+"&comments_id="+comments_id,true);
             xmlhttp.send();
             
     }
 
-    function commentpress(order_number, ordered_product_id){
+    function commentpress(order_number, ordered_product_id, marking_id){
         if (event.key === "Enter") {
-            savecomment(1, order_number, ordered_product_id);
+            savecomment(1, order_number, ordered_product_id, marking_id);
         }
 
     }
 
-    function changestatus(type, ordered_product_id, order_number){  
+    function changestatus(type, ordered_product_id){  
         
             let xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function() {
@@ -99,7 +99,7 @@ function variantshow(variantnum){
 
             };
             
-            xmlhttp.open("GET","status-icon.php?order_number="+order_number+"&type="+type+"&ordered_product_id="+ordered_product_id,true);
+            xmlhttp.open("GET","status-icon.php?type="+type+"&ordered_product_id="+ordered_product_id,true);
             xmlhttp.send();
             
     }
@@ -118,40 +118,40 @@ function variantshow(variantnum){
             
     }
 
-    function commentslist(order_number, ordered_product_id){
+    function commentslist(rownum, order_number, ordered_product_id){
         let xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("commentslist-"+order_number+ordered_product_id).innerHTML = this.responseText;
+            document.getElementById("commentslist-"+rownum).innerHTML = this.responseText;
         }
         };
-        xmlhttp.open("GET","comments-list.php?order_number="+order_number+"&ordered_product_id="+ordered_product_id,true);
+        xmlhttp.open("GET","../orders/comments-list.php?order_number="+order_number+"&ordered_product_id="+ordered_product_id,true);
         xmlhttp.send();
     }
 
-    function savecomment(type, order_number, ordered_product_id){
-        tresc = document.getElementById("CommentText-"+order_number+ordered_product_id).value;
+    function savecomment(type, order_number, ordered_product_id, marking_id){
+        tresc = document.getElementById("CommentText-"+marking_id).value;
         if (type==1){
             
             let xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function() {
             if (this.readyState == 4 && this.status == 200) {
-                document.getElementById("commentslist-"+order_number+ordered_product_id).innerHTML = this.responseText;
+                document.getElementById("commentslist-"+marking_id).innerHTML = this.responseText;
             }
             };
-            xmlhttp.open("GET","comments-list.php?order_number="+order_number+"&ordered_product_id="+ordered_product_id+"&type="+type+"&commenttext="+tresc,true);
+            xmlhttp.open("GET","../orders/comments-list.php?order_number="+order_number+"&ordered_product_id="+ordered_product_id+"&type="+type+"&commenttext="+tresc,true);
             xmlhttp.send();
-            document.getElementById("CommentText-"+order_number+ordered_product_id).value = "";
+            document.getElementById("CommentText-"+marking_id).value = "";
         }
     }
 
 
     function searchproduct() {
         item = document.getElementById("SearchField").value;
-        ClientName = document.getElementById("ClientName").value;
+        ClientName = "";
         Category = document.getElementById("Category").value;
         Status = document.getElementById("Status").value;
-        Payment = document.getElementById("Payment").value;
+        Marking = document.getElementById("Marking").value;
         Guardian = document.getElementById("Guardian").value;
         let xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function() {
@@ -160,7 +160,7 @@ function variantshow(variantnum){
         }
         };
        
-        xmlhttp.open("GET","result-orders.php?item="+item+"&ClientName="+ClientName+"&Status="+Status+"&Payment="+Payment+"&Guardian="+Guardian+"&Category="+Category,true);
+        xmlhttp.open("GET","result-prod.php?item="+item+"&ClientName="+ClientName+"&Status="+Status+"&Marking="+Marking+"&Guardian="+Guardian+"&Category="+Category,true);
         xmlhttp.send();
         RowPrev=0;
     }
@@ -177,9 +177,9 @@ function variantshow(variantnum){
 <body onload="searchproduct()">
 
 <?php 
-$title = "Zamówienia";
+$title = "Produkcja";
 include "top.php";
-include 'orders-menu.php';
+include 'prod-menu.php';
 
 ?>
 
@@ -188,33 +188,12 @@ include 'orders-menu.php';
 
     <div class="col-5">
         <div class="naglowek-3">Znajdź </div>
-        <div class="tresc"><input type="text" class="textfield" id="SearchField" placeholder="numer / nazwa / nazwisko / mail" onChange="searchproduct()" onClick="searchproduct()"> 
+        <div class="tresc"><input type="text" class="textfield" id="SearchField" placeholder="numer / nazwa / technika znakowania" onChange="searchproduct()" onClick="searchproduct()"> 
 
         </div>
     </div>    
 
-    <div class="col-5">
-        <div class="naglowek-3">Klient</div>
-        <div class="tresc"><select class="textfield" id="ClientName" onChange="searchproduct()"> 
-        <option value="">-</option>
-            <?php
-                
-                $query = "SELECT DISTINCT * FROM orders WHERE main_status='złożone' OR  main_status='przyjęte' OR main_status='wizualizacja' OR main_status='akceptacja' OR main_status='gotowe' GROUP BY company_name;";
-                // FETCHING DATA FROM DATABASE
-                $result = mysqli_query($link, $query);
-                
-                if (mysqli_num_rows($result) > 0) {
-                    // OUTPUT DATA OF EACH ROW
-                    while($row = mysqli_fetch_assoc($result)) {
-                        echo "<option value='".$row['company_name']."'>".$row['company_name']."</option>";
-
-                    }
-                } 
-            ?>
-           
-        </select>
-        </div>
-    </div>
+    
           
     <div class="col-5">
         <div class="naglowek-3">Produkt</div>
@@ -223,7 +202,7 @@ include 'orders-menu.php';
 
             <?php
                 
-                $query = "SELECT DISTINCT product_name FROM ordered_product WHERE status='złożone' OR status='przyjęte' OR status='wizualizacja' OR status='akceptacja' OR status='gotowe' GROUP BY product_name;";
+                $query = "SELECT DISTINCT product_name FROM ordered_product WHERE status='w realizacji' OR status='przygotowalnia' OR status='gotowe' GROUP BY product_name;";
                 // FETCHING DATA FROM DATABASE
                 $result = mysqli_query($link, $query);
                 
@@ -241,20 +220,20 @@ include 'orders-menu.php';
     </div>
 
     <div class="col-5">
-        <div class="naglowek-3">Płatność</div>
-        <div class="tresc"><select class="textfield" id="Payment" onChange="searchproduct()"> 
+        <div class="naglowek-3">Znakowanie</div>
+        <div class="tresc"><select class="textfield" id="Marking" onChange="searchproduct()"> 
             <option value="">-</option>
 
             <?php
                 
-                $query = "SELECT DISTINCT * FROM orders";
+                $query = "SELECT DISTINCT * FROM marking GROUP BY marking_name";
                 // FETCHING DATA FROM DATABASE
                 $result = mysqli_query($link, $query);
                 
                 if (mysqli_num_rows($result) > 0) {
                     // OUTPUT DATA OF EACH ROW
                     while($row = mysqli_fetch_assoc($result)) {
-                        echo "<option value='".$row['payment']."'>".$row['payment']."</option>";
+                        echo "<option value='".$row['marking_name']."'>".$row['marking_name']."</option>";
 
                     }
                 }
@@ -270,8 +249,9 @@ include 'orders-menu.php';
         <div class="tresc"><select class="textfield" id="Status" onChange="searchproduct()"> 
             <option value="">-</option>
 
-            <?php                
-                $query = "SELECT DISTINCT id, status FROM ordered_product GROUP BY status;";
+            <?php
+                
+                $query = "SELECT DISTINCT id, status FROM ordered_product WHERE status='w realizacji' OR status='gotowe' OR status='przygotowalnia' GROUP BY status;";
                 // FETCHING DATA FROM DATABASE
                 $result = mysqli_query($link, $query);
                 
@@ -279,10 +259,9 @@ include 'orders-menu.php';
                     // OUTPUT DATA OF EACH ROW
                     while($row = mysqli_fetch_assoc($result)) {
                         echo "<option value='".$row['status']."'>".$row['status']."</option>";
-                        if ($row['status'] == 'złożone'){
-                        }
-                    }
+                        
 
+                    }
                   
                 } 
             ?>
@@ -290,8 +269,7 @@ include 'orders-menu.php';
         </select>
         </div>
     </div>
-
-    
+ 
 
     <div class="col-5">
         <div class="naglowek-3">Opiekun</div>
@@ -329,7 +307,7 @@ include 'orders-menu.php';
 <div style="height:80px;"></div>
 <div class="footer">
 <div class="content">
-     
+                
     </div>
 </div>
 

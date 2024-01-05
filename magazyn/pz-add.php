@@ -212,7 +212,7 @@ include 'mag-menu.php';
             <div class="tresc"><input class="textfield"  id="SearchField" placeholder="..." onChange="searchproduct()" onClick="searchproduct()"></div>
         </div>
         <br>
-        <div id="SearchResult" class="col-1 productlist">
+        <div id="SearchResult" class="productlist">
        
         </div>
 

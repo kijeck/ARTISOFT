@@ -610,7 +610,7 @@ text-align:center;
     display:inline-block;
     height:8px;
     width: 8px;
-    margin: 0px;
+  
     margin-right: 3px;
     background-image: url('images/marking/color-dot.svg');
 }
@@ -627,15 +627,25 @@ text-align:center;
 
 .marking-code-text{
     margin: 0px;
-    line-height: 2;
+    
     font-size: 14px;
     font-weight: 900;
 }
 .marking-location-text{
     margin: 0px;
-    line-height: 0;
     font-size: 11px;
     font-weight: 400;
+    max-width: 40px;
+    margin-bottom:-8px;
+}
+
+.marking-inline{
+    display:inline-block;
+    margin-right: 20px;;
+}
+
+.marking-width{
+    min-width:20px;
 }
 
 .currentmark{
@@ -693,10 +703,10 @@ padding: 4px;
 
 .row-table td{
     border-top:thin;
-    border-top-color:#E2E2E2;
+    border-top-color:#e9e9e9;
     border-top-style:solid;
     border-top-width:1px;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 400;
     }
 
@@ -736,6 +746,14 @@ font-weight:600;
 .action-icon{
     height:22px;
     width:22px;
+    display:inline-block;
+    
+}
+
+.mode-icon{
+    height:22px;
+    width:22px;
+    margin-right: 10px;
     display:inline-block;
     
 }
@@ -962,18 +980,5 @@ box-sizing:content-box;
 }
 
 
-.spinner {
-    width: 18px;
-    height: 18px;
-    border-radius: 80%;
-    background: radial-gradient(farthest-side,#000000 50%,#0000) 30% 0.5px/3.8px 5.8px no-repeat,
-         radial-gradient(farthest-side,#0000 calc(100% - 6.7px),rgba(0,0,0,0.1) 0);
-    animation: spinner-aur408 0.8s infinite linear;
- }
- 
- @keyframes spinner-aur408 {
-    to {
-       transform: rotate(1turn);
-    }
- }
+
 
